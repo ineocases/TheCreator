@@ -1,51 +1,79 @@
 export default [
 
 {
-    id:"davo",
+
+    id:"davoo",
 
     name:"Davoo Xeneize",
 
-    followers:2500000,
-
     niche:"Fútbol",
 
-    rarity:"rare",
+    team:"Boca",
 
-    collaboration:20,
+    fame:82,
 
-    reactions:30
+    personality:{
+        humor:70,
+        competitiveness:95,
+        controversy:45,
+        collaboration:70
+    },
+
+    unlock:{
+        subscribers:8000,
+        reputation:5
+    }
+
 },
 
 {
+
+    id:"lacobra",
+
+    name:"La Cobra",
+
+    niche:"Fútbol",
+
+    team:"Boca",
+
+    fame:80,
+
+    personality:{
+        humor:80,
+        competitiveness:85,
+        controversy:35,
+        collaboration:65
+    },
+
+    unlock:{
+        subscribers:12000,
+        reputation:6
+    }
+
+},
+
+{
+
     id:"spreen",
 
     name:"Spreen",
 
-    followers:12000000,
-
     niche:"Gaming",
 
-    rarity:"legendary",
+    fame:95,
 
-    collaboration:8,
+    personality:{
+        humor:95,
+        competitiveness:30,
+        controversy:20,
+        collaboration:90
+    },
 
-    reactions:15
-},
+    unlock:{
+        subscribers:120000,
+        reputation:20
+    }
 
-{
-    id:"coscu",
-
-    name:"Coscu",
-
-    followers:9000000,
-
-    niche:"Variedad",
-
-    rarity:"legendary",
-
-    collaboration:5,
-
-    reactions:20
 }
 
 ];
