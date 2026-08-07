@@ -143,3 +143,48 @@ button:hover{
     outline:2px solid var(--primary);
 
 }
+.stats{
+
+    margin-top:35px;
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:15px;
+
+}
+
+.stat{
+
+    background:var(--panel2);
+
+    border-radius:14px;
+
+    padding:20px;
+
+    text-align:center;
+
+}
+
+.stat span{
+
+    display:block;
+
+    margin-top:10px;
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+.stat small{
+
+    display:block;
+
+    margin-top:5px;
+
+    color:var(--text2);
+
+}
