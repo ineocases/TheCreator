@@ -188,3 +188,36 @@ button:hover{
     color:var(--text2);
 
 }
+.videoCard{
+
+    margin-top:20px;
+
+    background:var(--panel2);
+
+    border-radius:14px;
+
+    padding:20px;
+
+}
+
+.videoCard h2{
+
+    font-size:20px;
+
+}
+
+.videoCard p{
+
+    margin-top:10px;
+
+    color:var(--text2);
+
+}
+
+.videoCard small{
+
+    display:block;
+
+    margin-top:15px;
+
+}
