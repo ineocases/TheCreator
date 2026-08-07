@@ -1,56 +1,83 @@
+import { random, chance } from "./random.js";
+
 export function calculateVideo(player, video) {
 
+    // Base del video
+    let views = random(video.minViews, video.maxViews);
+
     // Calidad del creador
-    const qualityBonus = player.quality * 25;
+    views += player.quality * random(15, 30);
 
     // Creatividad
-    const creativityBonus = player.creativity * 18;
+    views += player.creativity * random(10, 25);
 
-    // Suerte
-    const luck = Math.floor(Math.random() * 3000);
+    // Bonus por reputación
+    views += player.reputation * 20;
 
-    // Tendencia
-    const trend = Math.floor(Math.random() * 2000);
+    // Canales chicos tienen un techo
+    let maxReach = 3000;
 
-    // Viral
-    let viralMultiplier = 1;
-    let viralText = "";
+    if(player.subscribers > 500)
+        maxReach = 8000;
 
-    if (Math.random() * 100 < video.viralChance) {
+    if(player.subscribers > 2000)
+        maxReach = 25000;
 
-        viralMultiplier = Math.floor(Math.random() * 8) + 3;
+    if(player.subscribers > 10000)
+        maxReach = 120000;
 
-        viralText = "🔥 ¡El algoritmo recomendó tu video!";
+    if(player.subscribers > 100000)
+        maxReach = 1000000;
+
+    let message = "Tu comunidad respondió normalmente.";
+
+    // Buen rendimiento
+    if(chance(15)){
+
+        views *= random(2,4);
+
+        message = "📈 YouTube empezó a recomendar tu video.";
 
     }
 
-    let views = (
-        video.minViews +
-        qualityBonus +
-        creativityBonus +
-        luck +
-        trend
-    ) * viralMultiplier;
+    // Viral
+    if(chance(video.viralChance)){
 
-    views = Math.floor(views);
+        views *= random(4,12);
 
-    const subscribers = Math.floor(
-        views / (18 + Math.random() * 20)
+        message = "🔥 Tu video se volvió viral.";
+
+    }
+
+    // Fenómeno (ultra raro)
+    if(chance(0.02)){
+
+        views *= random(30,120);
+
+        message = "🌎 ¡Todo internet está hablando de tu video!";
+
+    }
+
+    // Aplicar techo
+    views = Math.min(Math.floor(views), maxReach);
+
+    const subscribers = Math.max(
+        1,
+        Math.floor(
+            views / random(18,35)
+        )
     );
 
     const money = Math.floor(
-        views * 0.0025
+        views * random(15,40) / 10000
     );
 
-    return {
+    return{
 
         views,
-
         subscribers,
-
         money,
-
-        viralText
+        message
 
     };
 
