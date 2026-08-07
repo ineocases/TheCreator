@@ -1,12 +1,32 @@
 import Home from "../screens/home.js";
-import {render} from "./router.js";
+import CreateChannel from "../screens/createChannel.js";
+
+import { render } from "./router.js";
 
 render(Home());
 
-document
-.getElementById("newGame")
-.onclick=()=>{
+function loadHome(){
 
-    alert("En el próximo paso haremos Crear Canal 🚀");
+    render(Home());
 
-};
+    document
+    .getElementById("newGame")
+    .onclick=loadCreateChannel;
+
+}
+
+function loadCreateChannel(){
+
+    render(CreateChannel());
+
+    document
+    .getElementById("startCareer")
+    .onclick=()=>{
+
+        console.log("Crear jugador");
+
+    };
+
+}
+
+loadHome();
