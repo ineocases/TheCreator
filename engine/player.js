@@ -1,36 +1,42 @@
-export function createPlayer(data) {
+export function createPlayer(data){
 
-    return {
+    return{
 
-        // Información básica
-        channel: data.channel,
-        age: Number(data.age),
-        country: data.country,
-        niche: data.niche,
+        channel:data.channel,
 
-        // Carrera
-        year: 2026,
+        age:Number(data.age),
 
-        // Estadísticas
-        subscribers: 0,
-        views: 0,
-        money: 0,
+        country:data.country,
 
-        reputation: 0,
-        creativity: 50,
-        quality: 20,
-        burnout: 0,
+        niche:data.niche,
 
-        // Historial
-        videos: 0,
-        sponsors: [],
-        inventory: [],
-        awards: [],
+        year:2026,
 
-        // Configuración
-        unlockedPlatforms: [
-            "YouTube"
-        ]
+        quarter:1,
+
+        videosLeft:3,
+
+        subscribers:0,
+
+        views:0,
+
+        money:0,
+
+        reputation:0,
+
+        fame:0,
+
+        creativity:50,
+
+        quality:20,
+
+        burnout:0,
+
+        inventory:[],
+
+        sponsors:[],
+
+        awards:[]
 
     };
 
