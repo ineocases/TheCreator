@@ -157,6 +157,9 @@ function baseVistasPorVideo(player, calidad = 1) {
     const constancia = Number(player.atributos?.constancia) || 0;
     const algoritmo = Number(player.atributos?.algoritmo) || 0;
 
+    // La audiencia determina el piso principal de vistas.
+    // Un canal de 1.7M puede rondar 80k-180k por video normal;
+    // un canal chico todavía tiene descubrimiento orgánico.
     const ratioBase =
         0.055 +
         (fama / 100) * 0.045 +
@@ -168,8 +171,11 @@ function baseVistasPorVideo(player, calidad = 1) {
 
     const audiencia = subs * ratioBase * variacion * calidad * tendencia;
 
-    // Evita que un canal nuevo quede literalmente en 1-5 vistas.
-    return Math.max(35, Math.floor(audiencia));
+    // Incluso con pocos suscriptores existe descubrimiento, recomendaciones
+    // y gente que llega desde búsquedas. Esto evita el problema de 128 videos
+    // x 35 vistas = casi ningún crecimiento.
+    const descubrimiento = 80 + Math.floor(Math.sqrt(subs) * 1.5);
+    return Math.max(descubrimiento, Math.floor(audiencia));
 }
 
 function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
@@ -215,14 +221,14 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
     // tienen más gente nueva expuesta por cada video, pero no crecen de forma
     // exponencial sin límite.
     const conversionBase =
-        0.0045 +
-        (Number(a.carisma) || 0) * 0.000025 +
-        (Number(a.comunidad) || 50) * 0.000004;
+        0.0028 +
+        (Number(a.carisma) || 0) * 0.000018 +
+        (Number(a.comunidad) || 50) * 0.000003;
 
     const conversion = clamp(
         conversionBase * (viral ? 1.35 : 1),
-        0.003,
-        0.012
+        0.0022,
+        0.009
     );
 
     const nuevosSuscriptores = Math.max(
@@ -353,8 +359,8 @@ function simularVideoSecundario() {
     vistas = Math.max(1, Math.floor(vistas));
 
     const conversion =
-        0.003 +
-        clamp((Number(a.carisma) || 0) / 100, 0, 1) * 0.003;
+        0.0022 +
+        clamp((Number(a.carisma) || 0) / 100, 0, 1) * 0.0024;
 
     const subs = Math.max(
         0,
@@ -369,7 +375,7 @@ function simularVideoSecundario() {
         0,
         Math.floor(
             vistas *
-            (0.006 + (Number(a.marketing) || 0) * 0.00045)
+            (0.0065 + (Number(a.marketing) || 0) * 0.00045)
         )
     );
 
