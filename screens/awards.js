@@ -57,24 +57,39 @@ function todosCandidatos(summary) {
     ];
 }
 
+function tier(seguidores) {
+    if (seguidores >= 1000000) return 6;
+    if (seguidores >= 250000) return 5;
+    if (seguidores >= 50000) return 4;
+    if (seguidores >= 10000) return 3;
+    if (seguidores >= 1000) return 2;
+    return 1;
+}
+
 function score(c, categoria) {
     const growth = Math.log10(Math.max(1, c.crecimiento));
     const views = Math.log10(Math.max(1, c.vistas));
     const followers = Math.log10(Math.max(1, c.seguidores));
-
+    const t = tier(c.seguidores);
     let value = 0;
+
     if (categoria === "streamer") {
-        value = growth * 28 + views * 20 + c.popularidad * 0.28 + c.virales * 5 + Math.min(12, c.videos / 30) + followers * 3;
+        // La escala importa mucho. Un canal pequeño puede tener un año increíble,
+        // pero no desplaza automáticamente a una estrella consolidada.
+        value = growth * 22 + views * 25 + c.popularidad * 0.30 + c.virales * 5 + Math.min(15, c.videos / 20) + followers * 2;
+        value += t * 14;
+        if (c.seguidores < 10000) value -= 35;
+        else if (c.seguidores < 50000) value -= 18;
     } else if (categoria === "revelacion") {
         const base = Math.max(1, c.seguidores - c.crecimiento);
         const pctGrowth = c.crecimiento / base;
-        value = pctGrowth * 80 + growth * 18 + views * 8 + c.virales * 4;
+        value = pctGrowth * 100 + growth * 20 + views * 7 + c.virales * 5;
     } else if (categoria === "clip") {
         value = c.clips * 28 + c.virales * 12 + views * 3;
     } else if (categoria === "enojo") {
         value = c.enojos * 45 + c.virales * 3 + c.popularidad * 0.04;
     }
-    return value + Math.random() * 7;
+    return value + Math.random() * 4;
 }
 
 function nominados(candidatos, categoria) {

@@ -25,6 +25,7 @@ const saveManager = {
                 worldNews: gameState.worldNews,
                 pendingSponsorOffer: gameState.pendingSponsorOffer,
                 pendingEvent: gameState.pendingEvent,
+                pendingCollabOffer: gameState.pendingCollabOffer,
                 lastYearSummary: gameState.lastYearSummary,
                 lastQuarterResult: gameState.lastQuarterResult,
                 lastVideo: gameState.lastVideo,
@@ -106,6 +107,7 @@ const saveManager = {
 
             gameState.pendingSponsorOffer = parsedData.pendingSponsorOffer || null;
             gameState.pendingEvent = parsedData.pendingEvent || null;
+            gameState.pendingCollabOffer = parsedData.pendingCollabOffer || null;
             gameState.lastYearSummary = parsedData.lastYearSummary || null;
             gameState.lastVideo = parsedData.lastVideo || null;
             gameState.lastVideoResult = parsedData.lastVideoResult || null;

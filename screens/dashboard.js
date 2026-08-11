@@ -19,6 +19,7 @@ export function renderDashboard(el) {
     const actividad = p.actividadTrimestre;
     const sponsor = gameState.pendingSponsorOffer;
     const pendingEvent = gameState.pendingEvent;
+    const collab = gameState.pendingCollabOffer;
     const notif = gameState.notifications?.find(n => !n.leida);
 
     let accionPrincipal;
@@ -29,6 +30,12 @@ export function renderDashboard(el) {
     } else if (pendingEvent) {
         accionPrincipal =
             `<a class="btn primary big pulse" href="#pasanCosas">⚡ PASÓ ALGO</a>`;
+    } else if (collab) {
+        accionPrincipal =
+            `<a class="btn primary big pulse" href="#collabs">🤝 INVITACIÓN</a>`;
+    } else if (sponsor) {
+        accionPrincipal =
+            `<a class="btn gold big pulse" href="#sponsors">💼 PROPUESTA</a>`;
     } else if (p.videoSubidoEsteTrimestre) {
         accionPrincipal =
             `<a class="btn primary big" href="#pasanCosas">▶ CONTINUAR</a>`;
@@ -92,7 +99,18 @@ export function renderDashboard(el) {
                 </div>
             ` : ""}
 
-            ${sponsor ? `
+            ${collab ? `
+                <div class="callout sponsor-callout dramatic-callout">
+                    <div class="callout-icon">🤝</div>
+                    <div>
+                        <b>${collab.creatorName} quiere colaborar con vos.</b>
+                        <span>La invitación apareció sola porque tu canal llamó su atención.</span>
+                    </div>
+                    <a class="btn gold" href="#collabs">VER INVITACIÓN</a>
+                </div>
+            ` : ""}
+
+            ${sponsor && !collab ? `
                 <div class="callout sponsor-callout dramatic-callout">
                     <div class="callout-icon">💼</div>
                     <div>
@@ -103,7 +121,7 @@ export function renderDashboard(el) {
                 </div>
             ` : ""}
 
-            ${notif && !pendingEvent && !sponsor ? `
+            ${notif && !pendingEvent && !sponsor && !collab ? `
                 <div class="notice-line">
                     <span>●</span>
                     <b>${notif.titulo}</b>

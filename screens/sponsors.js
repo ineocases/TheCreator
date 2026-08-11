@@ -1,87 +1,78 @@
-// screens/sponsors.js
-import { gameState } from "../engine/gameState.js";
+// screens/collabs.js
 import { renderHeaderHud } from "../components/HeaderHud.js";
+import { gameState } from "../engine/gameState.js";
 
 const nf = n => Number(n || 0).toLocaleString();
 
-
-function continuarDespuesDeSponsor() {
+function continuar() {
     setTimeout(() => {
-        if (gameState.pendingEvent) {
-            window.location.hash = "#pasanCosas";
-            return;
-        }
-
+        if (gameState.pendingSponsorOffer) return void (window.location.hash = "#sponsors");
         if (gameState.time.trimestre === 2) {
             gameState.finalizarAño();
-            window.location.hash = "#yearSummary";
-            return;
+            return void (window.location.hash = "#yearSummary");
         }
-
         window.location.hash = "#videoResult";
-    }, 180);
+    }, 160);
 }
 
-export function renderSponsors(el) {
-    const container = el || document.getElementById("sponsorsScreen");
+export function renderCollabs(el) {
+    const container = el || document.getElementById("collabsScreen");
     if (!container) return;
-    const p = gameState.player;
-    const offer = gameState.pendingSponsorOffer;
-    const history = Array.isArray(gameState.sponsors) ? gameState.sponsors : [];
+    const offer = gameState.pendingCollabOffer;
+    const last = gameState.lastCollab;
+    const creators = (gameState.creators || []).filter(c => c.activo !== false).slice().sort((a,b) => Number(b.seguidores||0)-Number(a.seguidores||0)).slice(0, 12);
 
     container.innerHTML = `
-        <div class="page-shell">
+        <div class="page-shell compact-page">
             ${renderHeaderHud()}
             <div class="dashboard-top">
-                <div><div class="eyebrow">💼 NEGOCIOS</div><h1 class="page-title">Contratos</h1><p class="page-subtitle">Las marcas te encuentran. No necesitás perseguirlas.</p></div>
-                <a class="btn ghost" href="#dashboard">← Volver</a>
+                <div><div class="eyebrow">🤝 RED DE CREADORES</div><h1 class="page-title">Colaboraciones</h1><p class="page-subtitle">Las oportunidades aparecen solas según tu tamaño, crecimiento y relaciones.</p></div>
+                <a href="#dashboard" class="btn ghost">← Volver</a>
             </div>
 
             ${offer ? `
-                <section class="contract-card">
-                    <div class="contract-brand">${offer.name}</div>
-                    <div class="eyebrow">📩 PROPUESTA RECIBIDA</div>
-                    <h2>${offer.name} quiere trabajar con ${p.canal}.</h2>
-                    <p>Tu canal llegó a ${nf(p.suscriptores)} suscriptores y ${nf(p.fama)} de fama. La marca considera que ya tenés suficiente audiencia para una primera campaña.</p>
+                <section class="panel contract-card collab-offer-card">
+                    <div class="eyebrow">📩 INVITACIÓN RECIBIDA</div>
+                    <h2>${offer.creatorName} quiere hacer algo con vos.</h2>
+                    <p>${offer.creatorName} tiene <b>${nf(offer.creatorFollowers)}</b> seguidores y descubrió tu contenido durante este trimestre.</p>
                     <div class="contract-stats">
-                        <div><span>Pago</span><b>$${nf(offer.pago)}</b></div>
-                        <div><span>Duración</span><b>${offer.duration} trimestres</b></div>
-                        <div><span>Impacto</span><b>${offer.tipo === "casino" || offer.tipo === "cripto" ? `${offer.reputacionAceptar || -8} reputación` : `+${offer.prestige} fama`}</b></div>
+                        <div><span>Vistas</span><b>+${nf(offer.reward.vistas)}</b></div>
+                        <div><span>Seguidores</span><b>+${nf(offer.reward.subs)}</b></div>
+                        <div><span>Tipo</span><b>${offer.niche}</b></div>
                     </div>
-                    ${offer.tipo === "casino" || offer.tipo === "cripto" ? `<div class="sponsor-risk">⚠️ Oferta polémica: aceptar da mucha plata, pero baja tu reputación. Rechazarla mejora tu relación con la comunidad.</div>` : ""}
                     <div class="contract-actions">
-                        <button id="acceptSponsor" class="btn primary">ACEPTAR CONTRATO</button>
-                        <button id="rejectSponsor" class="btn ghost">RECHAZAR</button>
+                        <button id="acceptCollab" class="btn primary">ACEPTAR COLAB</button>
+                        <button id="rejectCollab" class="btn ghost">RECHAZAR</button>
                     </div>
                 </section>
             ` : `
-                <section class="empty-opportunity">
-                    <div class="empty-icon">📭</div>
-                    <h2>No hay ofertas nuevas.</h2>
-                    <p>Seguí creando. Cuando tu canal alcance un nivel interesante, una marca puede aparecer en tu bandeja automáticamente.</p>
+                <section class="panel empty-opportunity">
+                    <div class="empty-icon">🤝</div>
+                    <h2>No tenés una invitación pendiente.</h2>
+                    <p>No necesitás proponer nada. Seguí jugando y las colaboraciones van a surgir cuando tenga sentido.</p>
                 </section>
             `}
 
+            ${last ? `<section class="panel"><div class="eyebrow">ÚLTIMA COLABORACIÓN</div><h3>${last.estado === "aceptada" ? "🤝 " : "↩️ "}${last.creatorName}</h3><p class="muted">${last.estado === "aceptada" ? `+${nf(last.subs)} seguidores · +${nf(last.vistas)} vistas` : "Decidiste no participar esta vez."}</p></section>` : ""}
+
             <section class="panel">
-                <div class="eyebrow">HISTORIAL</div>
-                ${history.length ? history.slice().reverse().map(item => `
-                    <div class="history-row"><div><b>${item.name}</b><span>${item.estado === "aceptado" ? "Contrato aceptado" : "Oferta rechazada"}</span></div><strong>${item.estado === "aceptado" ? "+$" + nf(item.pago) : "—"}</strong></div>
-                `).join("") : `<p class="muted">Todavía no tenés contratos.</p>`}
+                <div class="eyebrow">🌎 MUNDO</div>
+                <h2>Creadores que están moviendo la escena</h2>
+                <div class="mini-list">${creators.map(c => `<div class="history-row"><div><b>${c.nombre}</b><span>${c.nicho} · ${c.pais || "Argentina"}</span></div><strong>${nf(c.seguidores)}</strong></div>`).join("")}</div>
             </section>
         </div>
     `;
 
-    container.querySelector("#acceptSponsor")?.addEventListener("click", () => {
-        gameState.aceptarSponsor();
-        continuarDespuesDeSponsor();
+    container.querySelector("#acceptCollab")?.addEventListener("click", () => {
+        gameState.aceptarCollab();
+        continuar();
     });
-    container.querySelector("#rejectSponsor")?.addEventListener("click", () => {
-        gameState.rechazarSponsor();
-        continuarDespuesDeSponsor();
+    container.querySelector("#rejectCollab")?.addEventListener("click", () => {
+        gameState.rechazarCollab();
+        continuar();
     });
-
     return container;
 }
 
-export const sponsorsScreen = { render: renderSponsors };
-export default sponsorsScreen;
+export const collabsScreen = { render: renderCollabs };
+export default collabsScreen;

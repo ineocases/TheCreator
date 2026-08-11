@@ -20,6 +20,10 @@ function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function randomFloat(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
 function crearAtributos() {
     return {
         edicion: 10,
@@ -130,6 +134,7 @@ export const gameState = {
 
     pendingSponsorOffer: null,
     pendingEvent: null,
+    pendingCollabOffer: null,
 
     lastVideo: null,
     lastVideoResult: null,
@@ -159,6 +164,7 @@ export const gameState = {
         this.worldNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
+        this.pendingCollabOffer = null;
         this.lastVideo = null;
         this.lastVideoResult = null;
         this.lastQuarterResult = null;
@@ -507,9 +513,101 @@ export const gameState = {
             p.stats.eventosGanados = (Number(p.stats.eventosGanados) || 0) + 1;
         }
 
-        // El sponsor se evalúa DESPUÉS de la decisión, para que el crecimiento
-        // conseguido con el evento también pueda desbloquear una marca.
-        this.generarOfertaSponsor();
+        // Después de la decisión, primero puede aparecer una colaboración y
+        // recién después una propuesta comercial.
+        this.generarOfertaColaboracionAutomatica();
+        if (!this.pendingCollabOffer) this.generarOfertaSponsor();
+        this.guardar();
+        return true;
+    },
+
+    // Las colaboraciones también nacen solas: el mundo puede descubrir al jugador
+    // según su tamaño, crecimiento, nicho y networking. El menú Colabs queda como
+    // bandeja/historial, no como una lista de tareas obligatorias.
+    generarOfertaColaboracionAutomatica() {
+        const p = this.player;
+        if (!p || this.pendingCollabOffer) return null;
+
+        const subs = Number(p.suscriptores) || 0;
+        const networking = Number(p.atributos?.networking) || 0;
+        const fama = Number(p.fama) || 0;
+        const niche = p.niche;
+
+        const candidatos = (this.creators || [])
+            .filter(c => c.activo !== false && c.id !== "player")
+            .filter(c => !Number.isInteger(c.debutYear) || c.debutYear <= Number(this.time.año || 2026))
+            .filter(c => Number(c.seguidores || 0) >= Math.max(1000, Math.floor(subs * 0.45)))
+            .filter(c => Number(c.seguidores || 0) <= Math.max(12000, Math.floor(subs * (subs < 50000 ? 8 : subs < 250000 ? 5 : 3))))
+            .filter(c => c.nicho === niche || Math.random() < 0.38)
+            .filter(c => Number(this.player.relationships?.[c.id] || 0) > -40);
+
+        if (!candidatos.length) return null;
+
+        // Una invitación por trimestre como máximo. El networking mejora la chance,
+        // pero no convierte el sistema en automático al 100%.
+        const chance = Math.min(
+            0.42,
+            0.10 + networking * 0.004 + fama * 0.0015 + Math.min(0.08, (subs / 250000) * 0.08)
+        );
+        if (Math.random() > chance) return null;
+
+        const creador = candidatos[Math.floor(Math.random() * candidatos.length)];
+        const escala = Math.max(0.45, Math.min(1.35, Number(creador.seguidores || 1) / Math.max(1, subs)));
+        const vistas = Math.max(500, Math.round(Number(creador.seguidores || 0) * random(0.025, 0.075) * escala));
+        const subsGanados = Math.max(5, Math.round(vistas * randomFloat(0.0035, 0.012)));
+
+        this.pendingCollabOffer = {
+            id: crearId("collab"),
+            creatorId: creador.id,
+            creatorName: creador.nombre,
+            creatorFollowers: Number(creador.seguidores) || 0,
+            año: this.time.año,
+            trimestre: this.time.trimestre,
+            niche: creador.nicho,
+            reward: { vistas, subs: subsGanados },
+            estado: "pendiente"
+        };
+
+        this.agregarNotificacion({
+            tipo: "collab",
+            titulo: `🤝 ${creador.nombre} quiere colaborar con vos`,
+            descripcion: "Una colaboración surgió de forma orgánica en el mundo."
+        });
+        this.guardar();
+        return this.pendingCollabOffer;
+    },
+
+    aceptarCollab() {
+        const oferta = this.pendingCollabOffer;
+        if (!oferta) return false;
+        const creador = this.creators.find(c => c.id === oferta.creatorId);
+        const vistas = Number(oferta.reward?.vistas) || 0;
+        const subs = Number(oferta.reward?.subs) || 0;
+
+        this.player.vistasTotales += vistas;
+        this.player.suscriptores += subs;
+        this.player.fama = Math.min(100, Number(this.player.fama || 0) + 2 + (creador ? Math.min(4, Number(creador.popularidad || 0) / 30) : 0));
+        this.player.stats.colaboraciones = (Number(this.player.stats?.colaboraciones) || 0) + 1;
+        this.player.relationships[oferta.creatorId] = Math.min(100, Number(this.player.relationships?.[oferta.creatorId] || 0) + 15);
+        if (creador) creador.colaboraciones = (Number(creador.colaboraciones) || 0) + 1;
+
+        this.lastCollab = { ...oferta, estado: "aceptada", vistas, subs, fecha: Date.now() };
+        this.pendingCollabOffer = null;
+        this.agregarNotificacion({
+            tipo: "collab",
+            titulo: `🤝 Colaboración con ${oferta.creatorName}`,
+            descripcion: `+${vistas.toLocaleString()} vistas y +${subs.toLocaleString()} suscriptores.`
+        });
+        this.guardar();
+        return true;
+    },
+
+    rechazarCollab() {
+        const oferta = this.pendingCollabOffer;
+        if (!oferta) return false;
+        this.player.relationships[oferta.creatorId] = Math.max(-100, Number(this.player.relationships?.[oferta.creatorId] || 0) - 3);
+        this.lastCollab = { ...oferta, estado: "rechazada", fecha: Date.now() };
+        this.pendingCollabOffer = null;
         this.guardar();
         return true;
     },
@@ -662,6 +760,7 @@ export const gameState = {
                 worldNews: this.worldNews,
                 pendingSponsorOffer: this.pendingSponsorOffer,
                 pendingEvent: this.pendingEvent,
+                pendingCollabOffer: this.pendingCollabOffer,
                 lastVideo: this.lastVideo,
                 lastVideoResult: this.lastVideoResult,
                 lastQuarterResult: this.lastQuarterResult,
@@ -703,6 +802,7 @@ export const gameState = {
 
             this.pendingSponsorOffer = data.pendingSponsorOffer || null;
             this.pendingEvent = data.pendingEvent || null;
+            this.pendingCollabOffer = data.pendingCollabOffer || null;
             this.lastVideo = data.lastVideo || null;
             this.lastVideoResult = data.lastVideoResult || null;
             this.lastQuarterResult = data.lastQuarterResult || null;
@@ -744,6 +844,7 @@ export const gameState = {
         this.lastYearSummary = null;
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
+        this.pendingCollabOffer = null;
         this.ultimoEventoResultado = null;
 
         this.guardar();
@@ -795,8 +896,11 @@ export const gameState = {
             famaFin: fin.fama,
             reputacion: fin.reputacion,
 
-            mejorVideo: Number(this.player.stats?.mejorVideo) || 0,
-            videosVirales: Number(this.player.stats?.videosVirales) || 0,
+            mejorVideo: Math.max(
+                Number(this.player.historialTrimestre1?.mejorVideo) || 0,
+                Number(this.player.historialTrimestre2?.mejorVideo) || 0
+            ),
+            videosVirales: (Number(this.player.historialTrimestre1?.virales) || 0) + (Number(this.player.historialTrimestre2?.virales) || 0),
 
             trimestre1: this.player.historialTrimestre1 || null,
             trimestre2: this.player.historialTrimestre2 || null
@@ -822,6 +926,7 @@ export const gameState = {
         this.worldNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
+        this.pendingCollabOffer = null;
         this.lastVideo = null;
         this.lastVideoResult = null;
         this.lastQuarterResult = null;
@@ -920,6 +1025,7 @@ export function normalizarGameState() {
     if (!Array.isArray(gameState.worldNews)) gameState.worldNews = [];
     if (!("pendingSponsorOffer" in gameState)) gameState.pendingSponsorOffer = null;
     if (!("pendingEvent" in gameState)) gameState.pendingEvent = null;
+    if (!("pendingCollabOffer" in gameState)) gameState.pendingCollabOffer = null;
 }
 
 normalizarGameState();
