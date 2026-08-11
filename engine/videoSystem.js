@@ -42,6 +42,11 @@ function generarTitulo(formato, tema) {
             `NO esperaba esto en ${tema}`,
             `La partida más rara de ${tema}`
         ],
+        "Gameplay premium": [
+            `Jugando ${tema} con todo al máximo`,
+            `Probé ${tema} y pasó esto`,
+            `¿Vale la pena ${tema}?`
+        ],
         "Reaccionando a": [
             `Reaccionando a lo mejor de ${tema}`,
             `NO PUEDO CREER lo que pasó con ${tema}`,
@@ -74,7 +79,7 @@ function generarTitulo(formato, tema) {
 }
 
 function atributoPrincipal(formato, tema) {
-    if (formato === "Gameplay") return "algoritmo";
+    if (formato === "Gameplay" || formato === "Gameplay premium") return "algoritmo";
     if (formato === "Reaccionando a") return "carisma";
     if (formato === "Challenge") return "creatividad";
     if (formato === "24 Horas con") return "constancia";
@@ -86,40 +91,68 @@ function atributoPrincipal(formato, tema) {
 
 export function generarVideos(player) {
     const temas = obtenerTemas(player.niche);
-    const usados = [];
-    const videos = [];
+    const catalogo = [];
+    const dineroDisponible = Math.max(0, Number(player.dinero) || 0);
 
-    for (let i = 0; i < 6; i++) {
-        let tema = temas[random(0, temas.length - 1)];
-        let intentos = 0;
+    // Generamos opciones y después mostramos SOLO las que el jugador puede pagar.
+    // Los videos baratos/gratis tienen más presencia para que una partida nueva
+    // nunca quede bloqueada por falta de dinero.
+    const formatosDisponibles = formats.filter(f => Number(f.cost) <= dineroDisponible);
+    const formatosSeguros = formatosDisponibles.length
+        ? formatosDisponibles
+        : formats.filter(f => Number(f.cost) === 0);
 
-        while (usados.includes(tema) && intentos < 10) {
-            tema = temas[random(0, temas.length - 1)];
-            intentos++;
-        }
+    const usados = new Set();
+    let intentos = 0;
 
-        usados.push(tema);
+    while (catalogo.length < 6 && intentos < 80) {
+        intentos++;
+        const tema = temas[random(0, temas.length - 1)];
+        const formato = formatosSeguros[random(0, formatosSeguros.length - 1)];
+        const clave = `${formato.name}::${tema}`;
+        if (usados.has(clave)) continue;
+        usados.add(clave);
 
-        const formato = obtenerFormato(i);
         const enfoquePrincipal = atributoPrincipal(formato.name, tema);
         const enfoqueSecundario = enfoquePrincipal === "carisma" ? "humor" : "creatividad";
 
-        videos.push({
+        catalogo.push({
             id: typeof crypto !== "undefined" && crypto.randomUUID
                 ? crypto.randomUUID()
-                : `video_${Date.now()}_${i}`,
+                : `video_${Date.now()}_${catalogo.length}`,
             titulo: generarTitulo(formato, tema),
             formato: formato.name,
             tema,
             costo: Number(formato.cost) || 0,
             riesgo: Number(formato.risk) || 0,
-            tipo: obtenerTipo(i),
+            tipo: formato.cost === 0 ? "gratis" : formato.cost <= 35 ? "barato" : "premium",
             enfoquePrincipal,
             enfoqueSecundario
         });
     }
 
-    return videos;
+    // Si el catálogo quedó corto por falta de combinaciones, completamos
+    // con opciones gratuitas repetibles pero con título/ID distintos.
+    while (catalogo.length < 6) {
+        const tema = temas[random(0, temas.length - 1)];
+        const formato = formatosSeguros[0];
+        const enfoquePrincipal = atributoPrincipal(formato.name, tema);
+        const enfoqueSecundario = enfoquePrincipal === "carisma" ? "humor" : "creatividad";
+        catalogo.push({
+            id: `video_${Date.now()}_${catalogo.length}_${Math.random().toString(36).slice(2,7)}`,
+            titulo: generarTitulo(formato, tema),
+            formato: formato.name,
+            tema,
+            costo: Number(formato.cost) || 0,
+            riesgo: Number(formato.risk) || 0,
+            tipo: formato.cost === 0 ? "gratis" : "barato",
+            enfoquePrincipal,
+            enfoqueSecundario
+        });
+    }
+
+    // Orden económico: primero gratis/baratos, luego premium.
+    return catalogo.sort((a,b) => a.costo - b.costo);
 }
 
 function potenciaBase(player) {

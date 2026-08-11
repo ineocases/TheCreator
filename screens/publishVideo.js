@@ -20,19 +20,20 @@ export function renderPublishVideo(el) {
     const videos = generarVideos(gameState.player);
 
     const renderVideoCard = video => `
-        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
-                <div>
-                    <h2 style="margin:0 0 7px;color:#fff;font-size:1.1rem;">${video.titulo}</h2>
-                    <div style="color:var(--text-muted);font-size:.85rem;">${video.formato} · ${video.tema}</div>
-                </div>
-                <strong style="white-space:nowrap;color:${video.costo===0?'var(--accent-green)':'var(--accent-red)'};">${video.costo===0?'GRATIS':'$'+video.costo.toLocaleString()}</strong>
+        <article class="video-option-card">
+            <div class="video-option-top">
+                <span class="video-option-tag ${video.costo === 0 ? 'free' : video.costo <= 35 ? 'cheap' : 'premium'}">
+                    ${video.costo === 0 ? 'GRATIS' : '$' + video.costo.toLocaleString()}
+                </span>
+                <span class="video-risk">RIESGO ${Math.max(1, Math.min(5, Math.ceil(video.riesgo / 20)))} / 5</span>
             </div>
-            <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                <span style="color:var(--text-muted);font-size:.8rem;">Riesgo: ${"⭐".repeat(Math.max(1,Math.min(5,Math.ceil(video.riesgo/20))))}</span>
-                <button class="select-video" data-video-id="${video.id}" style="padding:10px 16px;background:var(--accent-red);color:#fff;border:none;border-radius:8px;font-weight:bold;">PUBLICAR</button>
+            <h2>${video.titulo}</h2>
+            <p class="video-option-meta">${video.formato} · ${video.tema}</p>
+            <div class="video-option-bottom">
+                <span>🎯 ${video.enfoquePrincipal}</span>
+                <button class="select-video btn primary" data-video-id="${video.id}">PUBLICAR</button>
             </div>
-        </div>
+        </article>
     `;
 
     container.innerHTML = `
@@ -41,9 +42,11 @@ export function renderPublishVideo(el) {
             <div style="margin:25px 0;">
                 <div style="color:var(--accent-red);font-size:.8rem;font-weight:bold;">TRIMESTRE ${gameState.time.trimestre}/2</div>
                 <h1 style="font-family:var(--font-heading);margin:6px 0;">📹 Elegí tu video</h1>
-                <p style="color:var(--text-muted);">Vos elegís 1 video destacado. Después, tu canal sigue publicando normalmente durante todo el trimestre.</p>
+                <p style="color:var(--text-muted);">Elegí 1 video. Solo aparecen producciones que podés pagar. Después, tu canal sigue publicando durante todo el trimestre.</p>
             </div>
-            ${videos.map(renderVideoCard).join("")}
+            <div class="video-options-grid">
+                ${videos.map(renderVideoCard).join("")}
+            </div>
         </div>
     `;
 

@@ -323,10 +323,89 @@ export const gameState = {
             }
         ];
 
-        const validos = eventos.filter(e => Number(p.suscriptores) >= e.minSubs);
-        if (!validos.length) return null;
+        const eventosNegativos = [
+            {
+                id: "upload_backlash",
+                minSubs: 50,
+                title: "Un video recibió críticas",
+                text: "Un recorte del video cayó mal y empezó a circular. Ahora tenés que decidir cómo reaccionar.",
+                a: {
+                    label: "Responder y aclarar",
+                    desc: "-8% vistas, pero +4% reputación",
+                    action: { reputacion: 4 },
+                    cierre: { vistasPct: -0.08 }
+                },
+                b: {
+                    label: "Ignorarlo",
+                    desc: "-4% suscriptores y -6% ingresos",
+                    action: { reputacion: -2 },
+                    cierre: { subsPct: -0.04, dineroPct: -0.06 }
+                }
+            },
+            {
+                id: "bad_algorithm",
+                minSubs: 50,
+                title: "El algoritmo te soltó la mano",
+                text: "Durante unos días tus publicaciones aparecen mucho menos recomendadas.",
+                a: {
+                    label: "Publicar igual",
+                    desc: "-10% vistas, pero +10% videos",
+                    action: { constancia: 2 },
+                    cierre: { vistasPct: -0.10, videosPct: 0.10 }
+                },
+                b: {
+                    label: "Cambiar la estrategia",
+                    desc: "-5% vistas y -3% ingresos, pero +3 algoritmo",
+                    action: { algoritmo: 3 },
+                    cierre: { vistasPct: -0.05, dineroPct: -0.03 }
+                }
+            },
+            {
+                id: "equipment_failure",
+                minSubs: 250,
+                title: "Se rompió parte del equipo",
+                text: "Una falla te obliga a improvisar justo cuando estabas teniendo un buen trimestre.",
+                a: {
+                    label: "Pagar la reparación",
+                    desc: "-$40 y evitás perder rendimiento",
+                    action: { dinero: -40 },
+                    cierre: {}
+                },
+                b: {
+                    label: "Grabar igual",
+                    desc: "No gastás dinero, pero -15% vistas",
+                    action: { edicion: -1 },
+                    cierre: { vistasPct: -0.15 }
+                }
+            },
+            {
+                id: "controversy_bad",
+                minSubs: 5000,
+                title: "Una publicación se malinterpretó",
+                text: "Una frase del video se sacó de contexto y la conversación empieza a crecer.",
+                a: {
+                    label: "Dar la cara",
+                    desc: "+8% vistas, -8 reputación",
+                    action: { reputacion: -8, fama: 2 },
+                    cierre: { vistasPct: 0.08 }
+                },
+                b: {
+                    label: "Bajar el perfil",
+                    desc: "-10% vistas, pero recuperás reputación",
+                    action: { reputacion: 4 },
+                    cierre: { vistasPct: -0.10 }
+                }
+            }
+        ];
 
-        const evento = validos[Math.floor(Math.random() * validos.length)];
+        const eventosPositivos = eventos.filter(e => Number(p.suscriptores) >= e.minSubs);
+        const eventosMalosValidos = eventosNegativos.filter(e => Number(p.suscriptores) >= e.minSubs);
+        if (!eventosPositivos.length && !eventosMalosValidos.length) return null;
+
+        // Aproximadamente 35% de las veces el cierre trae un problema real.
+        const usarEventoMalo = eventosMalosValidos.length && Math.random() < 0.35;
+        const pool = usarEventoMalo ? eventosMalosValidos : eventosPositivos;
+        const evento = pool[Math.floor(Math.random() * pool.length)];
         this.pendingEvent = JSON.parse(JSON.stringify(evento));
 
         this.agregarNotificacion({

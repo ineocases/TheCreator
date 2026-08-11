@@ -626,3 +626,56 @@ body{
   .compact-decision-grid .decision-card h2 { font-size:.9rem; }
   .event-footnote { font-size:.68rem; }
 }
+
+
+/* ============================================================
+   VIDEO PICKER - HORIZONTAL / MOBILE FIRST
+   ============================================================ */
+.video-options-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:10px;
+    margin-top:16px;
+}
+.video-option-card{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:190px;
+    padding:14px;
+    background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:12px;
+    transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+.video-option-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
+.video-option-top{display:flex;justify-content:space-between;align-items:center;gap:7px}
+.video-option-tag,.video-risk{font-size:.58rem;font-weight:900;letter-spacing:.04em}
+.video-option-tag{padding:4px 7px;border-radius:6px;background:rgba(255,255,255,.08)}
+.video-option-tag.free{color:var(--accent-green);background:rgba(57,211,83,.1)}
+.video-option-tag.cheap{color:var(--accent-yellow);background:rgba(255,212,59,.09)}
+.video-option-tag.premium{color:#ff8a8a;background:rgba(229,9,20,.09)}
+.video-risk{color:var(--text-muted)}
+.video-option-card h2{font-size:1rem;line-height:1.15;margin:12px 0 5px;font-family:var(--font-heading)}
+.video-option-meta{color:var(--text-muted);font-size:.72rem;line-height:1.35;margin:0 0 12px}
+.video-option-bottom{display:flex;align-items:center;justify-content:space-between;gap:7px;border-top:1px solid rgba(255,255,255,.06);padding-top:9px}
+.video-option-bottom>span{color:var(--text-muted);font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.video-option-bottom .btn{padding:8px 10px;min-height:34px;font-size:.68rem;white-space:nowrap}
+@media(max-width:760px){
+    .video-options-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .video-option-card{min-height:178px;padding:11px}
+    .video-option-card h2{font-size:.86rem}
+    .video-option-meta{font-size:.67rem}
+    .video-option-bottom>span{font-size:.57rem}
+    .video-option-bottom .btn{font-size:.62rem;padding:7px 8px}
+}
+@media(max-width:380px){
+    .video-options-grid{grid-template-columns:1fr 1fr}
+    .video-option-card{min-height:165px}
+    .video-option-bottom{align-items:stretch;flex-direction:column}
+    .video-option-bottom .btn{width:100%}
+}
+
+/* Eventos negativos: feedback visual de riesgo sin hacer la pantalla agresiva. */
+.event-main-card.is-negative{border-top-color:var(--accent-red);background:linear-gradient(145deg,rgba(229,9,20,.08),rgba(255,255,255,.018))}
