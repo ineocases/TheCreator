@@ -24,9 +24,6 @@ export function renderVideoResult(el) {
     }
 
     const finDeAño = gameState.time.trimestre === 2;
-    const sponsor = gameState.pendingSponsorOffer;
-    const evento = gameState.pendingEvent;
-
     container.innerHTML = `
         <div class="page-shell result-page">
             ${renderHeaderHud()}
@@ -102,42 +99,9 @@ export function renderVideoResult(el) {
                 </p>
             </div>
 
-            ${evento ? `
-                <div class="sponsor-alert event-alert">
-                    <div class="sponsor-alert-icon">⚡</div>
-                    <div>
-                        <div class="eyebrow">PASÓ ALGO</div>
-                        <h2>${evento.title}</h2>
-                        <p>${evento.text}</p>
-                    </div>
-                    <a class="btn primary" href="#pasanCosas">TOMAR DECISIÓN</a>
-                </div>
-            ` : ""}
-
-            ${sponsor ? `
-                <div class="sponsor-alert">
-                    <div class="sponsor-alert-icon">💼</div>
-                    <div>
-                        <div class="eyebrow">NUEVA PROPUESTA</div>
-                        <h2>${sponsor.name} quiere trabajar con vos</h2>
-                        <p>
-                            La oferta apareció automáticamente porque tu canal
-                            alcanzó el nivel que la marca busca.
-                        </p>
-                    </div>
-                    <a class="btn gold" href="#sponsors">VER OFERTA</a>
-                </div>
-            ` : ""}
-
             <div class="continue-row single-next">
                 <button id="continueAfterVideo" class="btn primary big next-button">
-                    ${evento
-                        ? "⚡ SIGUIENTE"
-                        : sponsor
-                            ? "💼 SIGUIENTE"
-                            : finDeAño
-                                ? "🏆 SIGUIENTE: RESUMEN DEL AÑO"
-                                : "▶ SIGUIENTE: TRIMESTRE 2"}
+                    ${finDeAño ? "🏆 SIGUIENTE: RESUMEN DEL AÑO" : "▶ SIGUIENTE: TRIMESTRE 2"}
                 </button>
             </div>
         </div>
@@ -145,16 +109,6 @@ export function renderVideoResult(el) {
 
     container.querySelector("#continueAfterVideo")?.addEventListener("click", () => {
         // Una sola flecha de avance controla todo el flujo.
-        if (evento) {
-            window.location.hash = "#pasanCosas";
-            return;
-        }
-
-        if (sponsor) {
-            window.location.hash = "#sponsors";
-            return;
-        }
-
         if (finDeAño) {
             gameState.finalizarAño();
             gameState.guardar();

@@ -18,8 +18,7 @@ function continuarDespuesDeSponsor() {
             return;
         }
 
-        gameState.nextQuarter();
-        window.location.hash = "#publish";
+        window.location.hash = "#videoResult";
     }, 180);
 }
 

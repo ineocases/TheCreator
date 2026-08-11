@@ -2,7 +2,7 @@
 // El mundo usa cifras BASE de simulación. No pretenden ser seguidores reales exactos:
 // sirven para que la escala entre creadores sea coherente y el mundo pueda crecer.
 
-const C = (id, nombre, nicho, seguidores, popularidad, crecimientoBase = 0.025) => ({
+const C = (id, nombre, nicho, seguidores, popularidad, crecimientoBase = 0.025, debutYear = null) => ({
     id,
     nombre,
     nicho,
@@ -11,6 +11,8 @@ const C = (id, nombre, nicho, seguidores, popularidad, crecimientoBase = 0.025) 
     seguidoresIniciales: seguidores,
     popularidad,
     crecimientoBase,
+    debutYear,
+    esRevelacion: Number.isInteger(debutYear),
     relacion: 0,
     respeto: 0,
     rivalidad: 0,
@@ -64,7 +66,21 @@ const creatorsIniciales = [
     C("illojuan", "IlloJuan", "Gaming", 5000000, 96, 0.025),
     C("xokas", "Xokas", "Variedad", 2200000, 91, 0.020),
     C("luisito", "Luisito Comunica", "Vlog", 42000000, 100, 0.012),
-    C("mkbhd", "MKBHD", "Tecnología", 20000000, 100, 0.010)
+    C("mkbhd", "MKBHD", "Tecnología", 20000000, 100, 0.010),
+    // Creadores ficticios de nueva camada: aparecen como parte del mundo y
+    // pueden competir por Streamer Revelación en su temporada de debut.
+    C("rookie_abril", "AbrilK", "Gaming", 4200, 58, 0.16, 2026),
+    C("rookie_tomi", "TomiFPS", "Gaming", 6800, 61, 0.14, 2026),
+    C("rookie_naza", "NazaLive", "Variedad", 3100, 55, 0.18, 2026),
+    C("rookie_bauti", "BautiGG", "Gaming", 9500, 64, 0.13, 2026),
+    C("rookie_mora", "MoraIRL", "IRL", 5200, 57, 0.15, 2027),
+    C("rookie_lean", "LeanClips", "Gaming", 7400, 60, 0.17, 2027),
+    C("rookie_fede", "FedeStream", "Fútbol", 3600, 54, 0.19, 2027),
+    C("rookie_vale", "ValeVlogs", "Vlog", 6100, 59, 0.16, 2027),
+    C("rookie_joaco", "JoacoEnVivo", "Gaming", 2800, 52, 0.21, 2028),
+    C("rookie_lola", "LolaPlay", "Variedad", 4700, 56, 0.18, 2028),
+    C("rookie_santi", "SantiFPS", "Gaming", 8300, 62, 0.15, 2028),
+    C("rookie_cami", "CamiIRL", "IRL", 3900, 53, 0.20, 2028),
 ];
 
 const paisesNoArgentina = {

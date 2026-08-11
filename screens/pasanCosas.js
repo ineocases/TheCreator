@@ -19,8 +19,8 @@ function continuarDespuesDelEvento() {
             return;
         }
 
-        gameState.nextQuarter();
-        window.location.hash = "#publish";
+        // El cierre del trimestre se muestra DESPUÉS de resolver el evento.
+        window.location.hash = "#videoResult";
     }, 180);
 }
 
@@ -52,7 +52,7 @@ export function renderPasanCosas(el) {
             ${renderHeaderHud()}
 
             <div class="event-topline">
-                <div class="eyebrow">⚡ PASAN COSAS · CIERRE DEL TRIMESTRE</div>
+                <div class="eyebrow">⚡ PASAN COSAS · ANTES DEL CIERRE</div>
                 <span class="event-quarter">${gameState.time.año} · T${gameState.time.trimestre}/2</span>
             </div>
 
@@ -60,15 +60,6 @@ export function renderPasanCosas(el) {
                 <div class="event-icon">⚡</div>
                 <h1 class="page-title">${event.title}</h1>
                 <p class="page-subtitle">${event.text}</p>
-
-                ${actividad ? `
-                    <div class="event-current-stats">
-                        <div><span>VIDEOS</span><b>${nf(actividad.videos)}</b></div>
-                        <div><span>VISTAS</span><b>${nf(actividad.vistas)}</b></div>
-                        <div><span>SUBS</span><b>+${nf(actividad.suscriptores)}</b></div>
-                        <div><span>INGRESOS</span><b>$${nf(actividad.dinero)}</b></div>
-                    </div>
-                ` : ""}
             </div>
 
             <div class="decision-grid compact-decision-grid">

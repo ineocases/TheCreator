@@ -20,12 +20,12 @@ export function renderCreateChannel(el) {
             <form id="create-channel-form" style="display: flex; flex-direction: column; gap: 20px;">
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Tu Nombre o Alias</label>
-                    <input type="text" id="player-name" required placeholder="Ej: Eros, Mateo..." style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: var(--border-subtle); border-radius: 8px; color: #fff; font-size: 1rem; box-sizing: border-box;" />
+                    <input type="text" id="player-name" required placeholder="Ej: Mateo, Nico..." style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: var(--border-subtle); border-radius: 8px; color: #fff; font-size: 1rem; box-sizing: border-box;" />
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Nombre de tu Canal</label>
-                    <input type="text" id="channel-name" required placeholder="Ej: ErosPlay, MateoVlogs..." style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: var(--border-subtle); border-radius: 8px; color: #fff; font-size: 1rem; box-sizing: border-box;" />
+                    <input type="text" id="channel-name" required placeholder="Ej: Mateoplay, NicoVlogs..." style="width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.5); border: var(--border-subtle); border-radius: 8px; color: #fff; font-size: 1rem; box-sizing: border-box;" />
                 </div>
 
                 <div>

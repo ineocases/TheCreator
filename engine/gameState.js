@@ -305,29 +305,29 @@ export const gameState = {
                 id: "coscu_react", minSubs: 5000, negativo: false, creatorId: "coscu",
                 title: "🎬 Coscu reaccionó a tu clip",
                 text: "Tu clip apareció en un stream de Coscu. Su chat empezó a buscar tu canal.",
-                a: { label: "Entrar al stream", desc: "+35% subs, +15 fama", action: { fama: 15, networking: 4 }, cierre: { subsPct: 0.35, vistasPct: 0.18 } },
-                b: { label: "Agradecer y seguir", desc: "+15% subs, +5 reputación", action: { reputacion: 5 }, cierre: { subsPct: 0.15, vistasPct: 0.10 } }
+                a: { label: "Entrar al stream", desc: "+120% subs, +150% vistas y +15 fama", action: { fama: 15, networking: 4 }, cierre: { subsPct: 1.20, vistasPct: 1.50 } },
+                b: { label: "Agradecer y seguir", desc: "+55% subs, +70% vistas y +5 reputación", action: { reputacion: 5 }, cierre: { subsPct: 0.55, vistasPct: 0.70 } }
             },
             {
                 id: "davo_invite", minSubs: 10000, negativo: false, creatorId: "davoo",
                 title: "🎤 Davo te invitó a un stream",
                 text: "Davo quiere que aparezcas en un stream para hablar de tu contenido y del nicho que compartís.",
-                a: { label: "Aceptar", desc: "+25% subs, +12 reputación", action: { reputacion: 12, networking: 5 }, cierre: { subsPct: 0.25, vistasPct: 0.15 } },
+                a: { label: "Aceptar", desc: "+75% subs, +90% vistas y +12 reputación", action: { reputacion: 12, networking: 5 }, cierre: { subsPct: 0.75, vistasPct: 0.90 } },
                 b: { label: "Rechazar por agenda", desc: "+3 constancia, oportunidad perdida", action: { constancia: 3 }, cierre: {} }
             },
             {
                 id: "spreen_vs", minSubs: 25000, negativo: false, creatorId: "spreen",
                 title: "🎮 Spreen te retó a un VS",
                 text: "Spreen vio un clip tuyo y te tiró un desafío público. Puede ser un salto enorme o un papelón.",
-                a: { label: "Aceptar el VS", desc: "+45% vistas, riesgo de -5% subs", action: { fama: 8, networking: 5 }, cierre: { vistasPct: 0.45, subsPct: -0.05 } },
-                b: { label: "No arriesgar", desc: "+10 reputación, +5% subs", action: { reputacion: 10 }, cierre: { subsPct: 0.05 } }
+                a: { label: "Aceptar el VS", desc: "+100% vistas y +45% subs", action: { fama: 8, networking: 5 }, cierre: { vistasPct: 1.00, subsPct: 0.45 } },
+                b: { label: "No arriesgar", desc: "+10 reputación y +12% subs", action: { reputacion: 10 }, cierre: { subsPct: 0.12 } }
             },
             {
                 id: "ibai_mention", minSubs: 100000, negativo: false, creatorId: "ibai",
                 title: "👑 Ibai te mencionó",
                 text: "Tu nombre apareció en un stream internacional. Gente de afuera empezó a buscar tu canal.",
-                a: { label: "Aprovechar el salto", desc: "+70% subs, +40% vistas", action: { fama: 20, reputacion: 5 }, cierre: { subsPct: 0.70, vistasPct: 0.40 } },
-                b: { label: "Mantener el perfil", desc: "+25% subs, +8 reputación", action: { reputacion: 8 }, cierre: { subsPct: 0.25, vistasPct: 0.15 } }
+                a: { label: "Aprovechar el salto", desc: "+250% subs y +220% vistas", action: { fama: 20, reputacion: 5 }, cierre: { subsPct: 2.50, vistasPct: 2.20 } },
+                b: { label: "Mantener el perfil", desc: "+75% subs, +90% vistas y +8 reputación", action: { reputacion: 8 }, cierre: { subsPct: 0.75, vistasPct: 0.90 } }
             },
 
             // Eventos neutros para que no todo sea drama.
@@ -346,6 +346,35 @@ export const gameState = {
                 b: { label: "Aguantar", desc: "+10% videos", action: { constancia: 2 }, cierre: { videosPct: 0.10 } }
             }
         ];
+
+        // Cualquier creador del mundo puede convertirse en una interacción.
+        // Los más grandes requieren más audiencia; los rookies pueden descubrirte antes.
+        const dinamicos = (this.creators || [])
+            .filter(c => c.activo !== false && c.id !== "player")
+            .filter(c => !Number.isInteger(c.debutYear) || c.debutYear <= Number(this.time.año || 2026))
+            .filter(c => Number(c.seguidores || 0) > 1000)
+            .filter(c => !eventos.some(e => e.creatorId === c.id))
+            .filter(c => {
+                const min = Math.max(1000, Math.min(150000, Math.round(Math.sqrt(Number(c.seguidores || 1)) * 10)));
+                return subs >= min;
+            })
+            .map(c => {
+                const escala = Math.max(0.35, Math.min(1.60, Number(c.popularidad || 50) / 65));
+                const baseSubs = Math.round(0.35 * escala * 100) / 100;
+                const baseViews = Math.round(0.55 * escala * 100) / 100;
+                return {
+                    id: `creator_react_${c.id}`,
+                    minSubs: Math.max(1000, Math.min(150000, Math.round(Math.sqrt(Number(c.seguidores || 1)) * 10))),
+                    negativo: false,
+                    creatorId: c.id,
+                    title: `🎬 ${c.nombre} descubrió tu contenido`,
+                    text: `${c.nombre} vio un clip tuyo y lo mencionó frente a su comunidad. La atención puede ser enorme si aprovechás el momento.`,
+                    a: { label: "Aprovechar la oportunidad", desc: `+${Math.round(baseSubs * 100)}% subs · +${Math.round(baseViews * 100)}% vistas`, action: { fama: Math.max(2, Math.round(8 * escala)), networking: 2 }, cierre: { subsPct: baseSubs, vistasPct: baseViews } },
+                    b: { label: "Agradecer y seguir", desc: `+${Math.round(baseSubs * 55)}% subs · +${Math.round(baseViews * 45)}% vistas`, action: { reputacion: 2 }, cierre: { subsPct: baseSubs * 0.55, vistasPct: baseViews * 0.45 } }
+                };
+            });
+
+        eventos.push(...dinamicos);
 
         const validos = eventos.filter(e => subs >= e.minSubs);
         if (!validos.length) return null;
@@ -565,7 +594,16 @@ export const gameState = {
         const oferta = this.pendingSponsorOffer;
         if (!oferta) return false;
 
-        this.player.dinero += Number(oferta.pago) || 0;
+        const pago = Number(oferta.pago) || 0;
+        this.player.dinero += pago;
+        this.player.ingresosTrimestre = (Number(this.player.ingresosTrimestre) || 0) + pago;
+        this.player.ingresosGenerados = (Number(this.player.ingresosGenerados) || 0) + pago;
+        if (this.player.actividadTrimestre) {
+            this.player.actividadTrimestre.dinero = (Number(this.player.actividadTrimestre.dinero) || 0) + pago;
+        }
+        if (this.lastQuarterResult) {
+            this.lastQuarterResult.totalDinero = (Number(this.lastQuarterResult.totalDinero) || 0) + pago;
+        }
         this.player.fama = Math.min(
             100,
             Number(this.player.fama) + Number(oferta.prestige || 0)
@@ -656,6 +694,9 @@ export const gameState = {
             this.inventory = Array.isArray(data.inventory) ? data.inventory : [];
             this.notifications = Array.isArray(data.notifications) ? data.notifications : [];
             this.creators = Array.isArray(data.creators) ? data.creators : crearCreadores();
+            const catalogoActual = crearCreadores();
+            const idsGuardados = new Set(this.creators.map(c => c.id));
+            catalogoActual.forEach(c => { if (!idsGuardados.has(c.id)) this.creators.push(c); });
             this.trends = Array.isArray(data.trends) ? data.trends : [];
             this.sponsors = Array.isArray(data.sponsors) ? data.sponsors : [];
             this.worldNews = Array.isArray(data.worldNews) ? data.worldNews : [];
@@ -854,6 +895,7 @@ export function normalizarGameState() {
     if (!("historialTrimestre1" in p)) p.historialTrimestre1 = null;
     if (!("historialTrimestre2" in p)) p.historialTrimestre2 = null;
     if (!p.yearStartSnapshot) p.yearStartSnapshot = snapshotAño(p);
+    if (p.pretemporada && typeof p.pretemporada.efecto !== "string") p.pretemporada.efecto = p.pretemporada.atributo || null;
 
     if (!gameState.time) {
         gameState.time = {

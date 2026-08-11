@@ -34,8 +34,10 @@ export function simulateWorld(game) {
     creators.forEach(creator => {
         if (creator.activo === false) return;
 
-        const mundo = ensureWorld(creator);
         const añoActual = Number(game.time?.año) || 2026;
+        if (Number.isInteger(creator.debutYear) && creator.debutYear > añoActual) return;
+
+        const mundo = ensureWorld(creator);
         if (mundo.año !== añoActual) {
             mundo.videos = 0;
             mundo.vistas = 0;

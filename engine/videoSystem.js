@@ -185,30 +185,33 @@ function calcularTendencia() {
 // La audiencia importa mucho más a medida que el canal crece.
 // 1.7M subs puede tener videos de decenas/cientos de miles de vistas;
 // 50 subs sigue siendo un canal muy chico.
+function bonusPretemporada(player) {
+    const e = player?.pretemporada?.efecto;
+    return e || null;
+}
+
 function baseVistasPorVideo(player, calidad = 1) {
     const subs = Math.max(50, Number(player.suscriptores) || 50);
     const fama = clamp(Number(player.fama) || 0, 0, 100);
     const constancia = Number(player.atributos?.constancia) || 0;
     const algoritmo = Number(player.atributos?.algoritmo) || 0;
 
-    // La audiencia determina el piso principal de vistas.
-    // Un canal de 1.7M puede rondar 80k-180k por video normal;
-    // un canal chico todavía tiene descubrimiento orgánico.
     const ratioBase =
-        0.055 +
-        (fama / 100) * 0.045 +
-        clamp(constancia / 100, 0, 1) * 0.018 +
-        clamp(algoritmo / 100, 0, 1) * 0.012;
+        0.060 +
+        (fama / 100) * 0.050 +
+        clamp(constancia / 100, 0, 1) * 0.022 +
+        clamp(algoritmo / 100, 0, 1) * 0.018;
+
+    let multiplicadorPre = 1;
+    const efecto = bonusPretemporada(player);
+    if (efecto === "marketing") multiplicadorPre *= 1.05;
+    if (efecto === "algoritmo") multiplicadorPre *= 1.06;
+    if (efecto === "edicion") multiplicadorPre *= 1.08;
 
     const variacion = randomFloat(0.72, 1.35);
     const tendencia = calcularTendencia();
-
-    const audiencia = subs * ratioBase * variacion * calidad * tendencia;
-
-    // Incluso con pocos suscriptores existe descubrimiento, recomendaciones
-    // y gente que llega desde búsquedas. Esto evita el problema de 128 videos
-    // x 35 vistas = casi ningún crecimiento.
-    const descubrimiento = 80 + Math.floor(Math.sqrt(subs) * 1.5);
+    const audiencia = subs * ratioBase * variacion * calidad * tendencia * multiplicadorPre;
+    const descubrimiento = 90 + Math.floor(Math.sqrt(subs) * 1.8);
     return Math.max(descubrimiento, Math.floor(audiencia));
 }
 
@@ -218,25 +221,21 @@ function calcularSubsPorVideo(vistas, player, viral = false) {
     const comunidad = Number(player.comunidad) || 50;
     const fama = Number(player.fama) || 0;
 
-    // Un video nunca puede aportar 0 suscriptores.
-    // Para un canal chico, lo normal es rondar 5-15 subs por video;
-    // a medida que aumentan las vistas, puede crecer mucho más.
-    const base = randomFloat(3, 6);
-    const porVistas = Math.sqrt(Math.max(1, vistas)) * 0.34;
+    const base = randomFloat(6, 10);
+    const porVistas = Math.sqrt(Math.max(1, vistas)) * 0.48;
     const calidad =
-        (carisma / 100) * 2.5 +
-        (comunidad / 100) * 1.5 +
-        (fama / 100) * 2;
+        (carisma / 100) * 4.5 +
+        (comunidad / 100) * 2.0 +
+        (fama / 100) * 2.5;
 
     let resultado = base + porVistas + calidad;
-    if (viral) resultado *= randomFloat(1.25, 1.65);
+    if (player?.pretemporada?.efecto === "carisma") resultado *= 1.12;
+    if (viral) resultado *= randomFloat(1.35, 1.85);
 
-    // En canales enormes la conversión relativa baja un poco,
-    // pero nunca eliminamos el crecimiento.
     const subsActuales = Number(player.suscriptores) || 50;
-    if (subsActuales >= 1000000) resultado *= 0.82;
-    else if (subsActuales >= 250000) resultado *= 0.88;
-    else if (subsActuales >= 50000) resultado *= 0.93;
+    if (subsActuales >= 1000000) resultado *= 0.88;
+    else if (subsActuales >= 250000) resultado *= 0.94;
+    else if (subsActuales >= 50000) resultado *= 0.97;
 
     return Math.max(3, Math.round(resultado));
 }
@@ -247,12 +246,14 @@ function calcularIngresosPorVideo(vistas, player) {
     const fama = Number(player.fama) || 0;
 
     const rpm = clamp(
-        1.20 + marketing * 0.065 + fama * 0.012 + randomFloat(-0.20, 0.35),
-        0.80,
-        6.50
+        1.25 + marketing * 0.075 + fama * 0.014 + randomFloat(-0.18, 0.38),
+        0.85,
+        7.50
     );
 
-    return Math.max(0.05, (Math.max(1, vistas) / 1000) * rpm);
+    let ingreso = (Math.max(1, vistas) / 1000) * rpm;
+    if (player?.pretemporada?.efecto === "marketing") ingreso *= 1.12;
+    return Math.max(0.05, ingreso);
 }
 
 function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
@@ -402,13 +403,12 @@ function simularVideoSecundario() {
 
     let vistas = baseVistasPorVideo(p, calidad);
 
-    const probViral = clamp(
+    let probViral =
         0.06 +
         (Number(a.creatividad) || 0) * 0.011 +
-        (Number(p.fama) || 0) * 0.0025,
-        0.06,
-        2.2
-    );
+        (Number(p.fama) || 0) * 0.0025;
+    if (p?.pretemporada?.efecto === "creatividad") probViral *= 1.35;
+    probViral = clamp(probViral, 0.06, 2.2);
 
     const viral = Math.random() * 100 < probViral;
     if (viral) vistas *= randomFloat(2.2, 5.5);
@@ -434,7 +434,10 @@ export function procesarPublicacionTrimestre(
         enfoqueSecundario || "carisma"
     );
 
-    const totalVideos = random(30, 150);
+    const constancia = Number(gameState.player.atributos?.constancia) || 0;
+    const efectoConstancia = gameState.player.pretemporada?.efecto === "constancia" ? 0.9 : 0;
+    const power = Math.max(0.55, 1.05 - (constancia / 100) * 0.30 - efectoConstancia);
+    const totalVideos = Math.min(150, 30 + Math.floor(Math.pow(Math.random(), power) * 121));
     const videosDelResto = Math.max(0, totalVideos - 1);
 
     let simVistas = 0;

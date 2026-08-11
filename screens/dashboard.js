@@ -118,6 +118,10 @@ export function renderDashboard(el) {
                 <div class="stat-tile"><span>💰 Dinero</span><strong>$${nf(p.dinero)}</strong></div>
             </div>
 
+            ${hizoPretemporada && !p.videoSubidoEsteTrimestre && !pendingEvent && !sponsor ? `
+                <a href="#publish" class="btn primary big pulse publish-main-cta">📹 PUBLICAR VIDEO</a>
+            ` : ""}
+
             <div class="dashboard-grid">
                 <section class="panel">
                     <div class="eyebrow">📈 ESTADO DEL CANAL</div>
@@ -182,10 +186,10 @@ export function renderDashboard(el) {
             ` : ""}
 
             <div class="quick-actions">
-                <a href="#collabs" class="action-card"><b>🤝 Colaboraciones</b><span>Construí relaciones con otros creadores.</span></a>
-                <a href="#store" class="action-card"><b>🛒 Equipo</b><span>Invertí cuando tu canal pueda aprovecharlo.</span></a>
-                <a href="#awards" class="action-card"><b>🏆 Awards</b><span>Reconocimiento al final de la temporada.</span></a>
-                <a href="#sponsors" class="action-card"><b>💼 Contratos</b><span>Solo aparecen cuando una marca te busca.</span></a>
+                <a href="#store" class="action-card"><b>🛒 TIENDA</b><span>Mejorá tu setup cuando te alcance.</span></a>
+                <a href="#collabs" class="action-card"><b>🤝 COLABS</b><span>Construí relaciones con otros creadores.</span></a>
+                <a href="#sponsors" class="action-card"><b>💼 SPONSORS</b><span>Las marcas te encuentran solas.</span></a>
+                <a href="#awards" class="action-card"><b>🏆 AWARDS</b><span>Reconocimiento al final de la temporada.</span></a>
             </div>
 
             <section class="danger-zone panel">

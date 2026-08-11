@@ -21,6 +21,7 @@ function metricForCreator(c) {
         clips: Number(m.clips || 0),
         enojos: Number(m.enojos || 0),
         popularidad: Number(c.popularidad || 0),
+        debutYear: Number.isInteger(c.debutYear) ? c.debutYear : null,
         isPlayer: false
     };
 }
@@ -42,6 +43,7 @@ function metricForPlayer(summary) {
         enojos: Number(awards.enojos || 0),
         popularidad: Number(summary?.famaFin || p.fama || 0),
         reputacion: Number(summary?.reputacion || p.reputacion || 50),
+        debutYear: Number(summary?.año) === 2026 ? 2026 : null,
         isPlayer: true
     };
 }
@@ -79,10 +81,8 @@ function nominados(candidatos, categoria) {
     let pool = [...candidatos];
 
     if (categoria === "revelacion") {
-        pool = pool.filter(c => {
-            const base = Math.max(1, c.seguidores - c.crecimiento);
-            return base <= 1000000;
-        });
+        const añoPremio = Number(gameState.lastYearSummary?.año) || 2026;
+        pool = pool.filter(c => Number(c.debutYear) === añoPremio);
     }
 
     if (categoria === "clip") {
