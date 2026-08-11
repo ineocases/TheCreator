@@ -46,8 +46,8 @@ export function renderCollabs(el) {
 
             ${offer ? `
                 <section class="panel contract-card collab-offer-card">
-                    <div class="eyebrow">📩 INVITACIÓN RECIBIDA</div>
-                    <h2>${offer.creatorName} quiere hacer algo con vos.</h2>
+                    <div class="eyebrow">${offer.direction === "outgoing" ? "📨 PROPUESTA ACEPTADA" : "📩 INVITACIÓN RECIBIDA"}</div>
+                    <h2>${offer.direction === "outgoing" ? `🤝 Nueva colaboración con ${offer.creatorName}` : `${offer.creatorName} quiere hacer algo con vos.`}</h2>
                     <p>${offer.creatorName} tiene <b>${nf(offer.creatorFollowers)}</b> seguidores y descubrió tu contenido durante este trimestre.</p>
                     <div class="contract-stats">
                         <div><span>Vistas</span><b>+${nf(offer.reward.vistas)}</b></div>
@@ -55,8 +55,8 @@ export function renderCollabs(el) {
                         <div><span>Nicho</span><b>${offer.niche}</b></div>
                     </div>
                     <div class="contract-actions">
-                        <button id="acceptCollab" class="btn primary">ACEPTAR COLAB</button>
-                        <button id="rejectCollab" class="btn ghost">RECHAZAR</button>
+                        <button id="acceptCollab" class="btn primary">CONTINUAR</button>
+                        <button id="rejectCollab" class="btn ghost">CERRAR</button>
                     </div>
                 </section>
             ` : `
@@ -79,12 +79,11 @@ export function renderCollabs(el) {
                 <div class="eyebrow">🌎 MUNDO</div>
                 <h2>Creadores que están moviendo la escena</h2>
                 <div class="mini-list">
-                    ${creators.map(c => `
-                        <div class="history-row">
-                            <div><b>${c.nombre}</b><span>${c.nicho} · ${c.pais || "Argentina"}</span></div>
-                            <strong>${nf(c.seguidores)}</strong>
-                        </div>
-                    `).join("")}
+                    ${creators.map(c => {
+                        const rel = Number(gameState.player.relationships?.[c.id] || 0);
+                        const puede = gameState.puedeProponerCollab?.(c.id);
+                        return `<div class="history-row"><div><b>${c.nombre}</b><span>${c.nicho} · ${c.pais || "Argentina"} · Relación ${rel}</span></div><div style="display:flex;gap:8px;align-items:center"><strong>${nf(c.seguidores)}</strong>${puede && !offer ? `<button class="btn ghost propose-collab" data-id="${c.id}">PROPONER</button>` : ""}</div></div>`;
+                    }).join("")}
                 </div>
             </section>
         </div>
@@ -96,8 +95,20 @@ export function renderCollabs(el) {
     });
 
     container.querySelector("#rejectCollab")?.addEventListener("click", () => {
-        gameState.rechazarCollab();
+        if (offer?.direction === "outgoing") {
+            gameState.pendingCollabOffer = null;
+            gameState.guardar();
+        } else {
+            gameState.rechazarCollab();
+        }
         continuar();
+    });
+
+    container.querySelectorAll(".propose-collab").forEach(button => {
+        button.addEventListener("click", () => {
+            const result = gameState.proponerCollab(button.dataset.id);
+            if (result === "aceptada" || result === "rechazada") window.location.hash = "#collabs";
+        });
     });
 
     return container;

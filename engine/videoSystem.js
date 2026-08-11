@@ -245,12 +245,23 @@ function calcularSubsPorVideo(vistas, player, viral = false) {
     if (player?.pretemporada?.efecto === "carisma") conversion *= 1.14;
     if (viral) conversion *= randomFloat(1.25, 1.90);
 
-    const variacion = randomFloat(0.72, 1.28);
-    const resultado = Math.round(vistas * conversion * variacion);
+    const variacion = randomFloat(0.68, 1.34);
+    let resultado = Math.round(vistas * conversion * variacion);
 
-    // Evita el bug de 78 videos = 24 subs. Todo video con alcance razonable
-    // debe aportar al menos unos pocos seguidores.
-    return Math.max(3, resultado);
+    // Regla de crecimiento del juego:
+    // un video publicado por el jugador siempre puede sumar audiencia.
+    // Incluso un video flojo deja al menos 10 subs; un viral puede despegar
+    // muchísimo más y romper la media de forma totalmente aleatoria.
+    resultado = Math.max(10, resultado);
+
+    if (viral) {
+        // Los virales no son simplemente +20%: algunos explotan de verdad.
+        // Esto permite resultados tipo +100, +300, +1.000 o mucho más.
+        const saltoViral = randomFloat(1.35, 3.80);
+        resultado = Math.max(100, Math.round(resultado * saltoViral));
+    }
+
+    return resultado;
 }
 
 function calcularIngresosPorVideo(vistas, player) {

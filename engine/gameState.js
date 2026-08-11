@@ -536,47 +536,74 @@ export const gameState = {
         const candidatos = (this.creators || [])
             .filter(c => c.activo !== false && c.id !== "player")
             .filter(c => !Number.isInteger(c.debutYear) || c.debutYear <= Number(this.time.año || 2026))
-            .filter(c => Number(c.seguidores || 0) >= Math.max(1000, Math.floor(subs * 0.45)))
-            .filter(c => Number(c.seguidores || 0) <= Math.max(12000, Math.floor(subs * (subs < 50000 ? 8 : subs < 250000 ? 5 : 3))))
-            .filter(c => c.nicho === niche || Math.random() < 0.38)
+            .filter(c => Number(c.seguidores || 0) >= 1000)
+            .filter(c => Number(c.seguidores || 0) <= (subs < 1000 ? 25000 : Math.max(25000, Math.floor(subs * (subs < 50000 ? 8 : subs < 250000 ? 5 : 3)))))
+            .filter(c => c.nicho === niche || Math.random() < 0.50)
             .filter(c => Number(this.player.relationships?.[c.id] || 0) > -40);
 
         if (!candidatos.length) return null;
 
-        // Una invitación por trimestre como máximo. El networking mejora la chance,
-        // pero no convierte el sistema en automático al 100%.
-        const chance = Math.min(
-            0.42,
-            0.10 + networking * 0.004 + fama * 0.0015 + Math.min(0.08, (subs / 250000) * 0.08)
-        );
+        const hayRookie = candidatos.some(c => Number(c.seguidores || 0) <= 25000 && Number.isInteger(c.debutYear));
+        const chance = subs < 1000
+            ? (hayRookie ? 0.78 : 0.58)
+            : Math.min(0.48, 0.12 + networking * 0.004 + fama * 0.0015 + Math.min(0.08, (subs / 250000) * 0.08));
+
         if (Math.random() > chance) return null;
 
-        const creador = candidatos[Math.floor(Math.random() * candidatos.length)];
-        const escala = Math.max(0.45, Math.min(1.35, Number(creador.seguidores || 1) / Math.max(1, subs)));
-        const vistas = Math.max(500, Math.round(Number(creador.seguidores || 0) * random(0.025, 0.075) * escala));
-        const subsGanados = Math.max(5, Math.round(vistas * randomFloat(0.0035, 0.012)));
+        const ordenados = candidatos.slice().sort((a, b) => Number(a.seguidores || 0) - Number(b.seguidores || 0));
+        const pool = subs < 5000
+            ? ordenados.slice(0, Math.min(8, ordenados.length))
+            : ordenados.slice(0, Math.min(14, ordenados.length));
+        const creador = pool[Math.floor(Math.random() * pool.length)];
+
+        const creadorSubs = Math.max(1000, Number(creador.seguidores) || 1000);
+        const vistas = Math.max(100, Math.round(creadorSubs * randomFloat(0.015, 0.055)));
+        const subsGanados = Math.max(10, Math.round(vistas * randomFloat(0.045, 0.14)));
 
         this.pendingCollabOffer = {
-            id: crearId("collab"),
-            creatorId: creador.id,
-            creatorName: creador.nombre,
-            creatorFollowers: Number(creador.seguidores) || 0,
-            año: this.time.año,
-            trimestre: this.time.trimestre,
-            niche: creador.nicho,
-            reward: { vistas, subs: subsGanados },
-            estado: "pendiente"
+            id: crearId("collab"), creatorId: creador.id, creatorName: creador.nombre,
+            creatorFollowers: creadorSubs, año: this.time.año, trimestre: this.time.trimestre,
+            niche: creador.nicho, direction: "incoming", reward: { vistas, subs: subsGanados }, estado: "pendiente"
         };
-
-        this.agregarNotificacion({
-            tipo: "collab",
-            titulo: `🤝 ${creador.nombre} quiere colaborar con vos`,
-            descripcion: "Una colaboración surgió de forma orgánica en el mundo."
-        });
+        this.agregarNotificacion({ tipo: "collab", titulo: `🤝 ${creador.nombre} quiere colaborar con vos`, descripcion: "Una colaboración surgió de forma orgánica en el mundo." });
         this.guardar();
         return this.pendingCollabOffer;
     },
 
+    puedeProponerCollab(creatorId) {
+        return Number(this.player?.relationships?.[creatorId] || 0) >= 15;
+    },
+
+    proponerCollab(creatorId) {
+        const p = this.player;
+        if (!p || this.pendingCollabOffer || !this.puedeProponerCollab(creatorId)) return false;
+        const creador = (this.creators || []).find(c => c.id === creatorId);
+        if (!creador || creador.activo === false) return false;
+
+        const relacion = Number(p.relationships?.[creatorId] || 0);
+        const diferencia = Number(creador.seguidores || 0) / Math.max(1, Number(p.suscriptores || 1));
+        const prob = Math.max(0.45, Math.min(0.92, 0.72 + relacion / 250 - Math.max(0, diferencia - 3) * 0.04));
+
+        if (Math.random() > prob) {
+            p.relationships[creatorId] = Math.max(-100, relacion - 2);
+            this.lastCollab = { creatorId, creatorName: creador.nombre, estado: "rechazada_por_creador", fecha: Date.now() };
+            this.agregarNotificacion({ tipo: "collab", titulo: `↩️ ${creador.nombre} no pudo sumarse`, descripcion: "La relación sigue abierta para otra oportunidad." });
+            this.guardar();
+            return "rechazada";
+        }
+
+        const vistas = Math.max(100, Math.round(Number(creador.seguidores || 0) * randomFloat(0.012, 0.045)));
+        const subs = Math.max(10, Math.round(vistas * randomFloat(0.045, 0.13)));
+        this.pendingCollabOffer = {
+            id: crearId("collab_out"), creatorId, creatorName: creador.nombre,
+            creatorFollowers: Number(creador.seguidores) || 0, año: this.time.año,
+            trimestre: this.time.trimestre, niche: creador.nicho, direction: "outgoing",
+            reward: { vistas, subs }, estado: "pendiente"
+        };
+        this.agregarNotificacion({ tipo: "collab", titulo: `📨 ${creador.nombre} aceptó tu propuesta`, descripcion: "La relación que construiste habilitó una nueva colaboración." });
+        this.guardar();
+        return "aceptada";
+    },
     aceptarCollab() {
         const oferta = this.pendingCollabOffer;
         if (!oferta) return false;
