@@ -47,8 +47,9 @@ export function renderSponsors(el) {
                     <div class="contract-stats">
                         <div><span>Pago</span><b>$${nf(offer.pago)}</b></div>
                         <div><span>Duración</span><b>${offer.duration} trimestres</b></div>
-                        <div><span>Prestigio</span><b>+${offer.prestige} fama</b></div>
+                        <div><span>Impacto</span><b>${offer.tipo === "casino" || offer.tipo === "cripto" ? `${offer.reputacionAceptar || -8} reputación` : `+${offer.prestige} fama`}</b></div>
                     </div>
+                    ${offer.tipo === "casino" || offer.tipo === "cripto" ? `<div class="sponsor-risk">⚠️ Oferta polémica: aceptar da mucha plata, pero baja tu reputación. Rechazarla mejora tu relación con la comunidad.</div>` : ""}
                     <div class="contract-actions">
                         <button id="acceptSponsor" class="btn primary">ACEPTAR CONTRATO</button>
                         <button id="rejectSponsor" class="btn ghost">RECHAZAR</button>

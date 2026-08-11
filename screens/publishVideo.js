@@ -75,13 +75,10 @@ export function renderPublishVideo(el) {
             gameState.lastVideo = video;
             gameState.guardar();
 
-            // Si pasó algo, aparece solo antes del cierre del trimestre.
-            // Si no, mostramos el resultado normal.
-            if (gameState.pendingEvent) {
-                window.location.hash = "#pasanCosas";
-            } else {
-                window.location.hash = "#videoResult";
-            }
+            // El cierre del trimestre pasa siempre por la misma puerta.
+            // Si hubo un evento, Pasan Cosas lo muestra; si no hubo, la pantalla
+            // avanza sola al siguiente trimestre/año sin mostrar un resumen intermedio.
+            window.location.hash = "#pasanCosas";
         });
     });
 

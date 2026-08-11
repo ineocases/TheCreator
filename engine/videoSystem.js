@@ -7,6 +7,7 @@
 import formats from "../data/generator/formats.js";
 import topics from "../data/generator/topics.js";
 import { gameState } from "./gameState.js";
+import { simulateWorld } from "./worldSimulation.js";
 
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -510,6 +511,11 @@ export function procesarPublicacionTrimestre(
     };
 
     gameState.lastQuarterResult = quarterResult;
+
+    // El mundo avanza al mismo tiempo que el jugador. Los demás creadores
+    // publican, ganan seguidores y generan noticias aunque el jugador no los vea.
+    simulateWorld(gameState);
+
     gameState.generarEventoPendiente();
     if (!gameState.pendingEvent) gameState.generarOfertaSponsor();
     gameState.guardar();

@@ -74,6 +74,7 @@ function crearPlayer() {
         },
 
         stats: crearStats(),
+        awardsStats: { clips: 0, enojos: 0, reacciones: 0 },
         relationships: {},
         pretemporada: null,
         shopTier: 1,
@@ -125,6 +126,7 @@ export const gameState = {
     creators: crearCreadores(),
     trends: [],
     sponsors: [],
+    worldNews: [],
 
     pendingSponsorOffer: null,
     pendingEvent: null,
@@ -154,6 +156,7 @@ export const gameState = {
         this.notifications = [];
         this.trends = [];
         this.sponsors = [];
+        this.worldNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
         this.lastVideo = null;
@@ -227,186 +230,140 @@ export const gameState = {
         const p = this.player;
         if (!p || this.pendingEvent) return null;
 
-        // Queremos que el mundo esté vivo, pero no que haya un evento siempre.
-        if (Math.random() > 0.68) return null;
+        // No pasa algo extraordinario todos los trimestres.
+        if (Math.random() > 0.72) return null;
+
+        const subs = Number(p.suscriptores) || 0;
+        const reputacion = Number(p.reputacion) || 50;
+        const fama = Number(p.fama) || 0;
 
         const eventos = [
+            // ==========================================================
+            // CONTROVERSIAS / PROBLEMAS
+            // ==========================================================
             {
-                id: "creator_share",
-                minSubs: 50,
-                title: "Un creador más grande compartió tu video",
-                text: "Tu contenido apareció delante de una audiencia nueva. Tenés que decidir cómo aprovechar el momento.",
-                a: {
-                    label: "Aprovechar el empujón",
-                    desc: "+12% vistas y +8% suscriptores del trimestre",
-                    action: { reputacion: 1 },
-                    cierre: { vistasPct: 0.12, subsPct: 0.08 }
-                },
-                b: {
-                    label: "Convertirlo en contenido",
-                    desc: "+6% vistas, +4% ingresos y +5% videos",
-                    action: { networking: 2 },
-                    cierre: { vistasPct: 0.06, dineroPct: 0.04, videosPct: 0.05 }
-                }
+                id: "clip_polemico", minSubs: 5000, negativo: true,
+                title: "🎥 Un clip polémico explotó en redes",
+                text: "Un recorte de tu contenido empezó a circular fuera de contexto y la gente está discutiendo sobre vos.",
+                a: { label: "Salir a aclararlo", desc: "-8% vistas, +5 reputación", action: { reputacion: 5 }, cierre: { vistasPct: -0.08 } },
+                b: { label: "No responder", desc: "-4% subs, pero +3 fama", action: { reputacion: -3, fama: 3 }, cierre: { subsPct: -0.04 } }
             },
             {
-                id: "trend",
-                minSubs: 50,
-                title: "Apareció una tendencia fuerte",
+                id: "acusacion_bots", minSubs: 15000, negativo: true,
+                title: "🤖 Te acusan de usar bots",
+                text: "Una cuenta grande publicó un hilo diciendo que tu crecimiento no es orgánico. No hay pruebas claras, pero el rumor prende.",
+                a: { label: "Mostrar números", desc: "+6% reputación, -5% vistas", action: { reputacion: 6 }, cierre: { vistasPct: -0.05 } },
+                b: { label: "Ignorar el rumor", desc: "+5% vistas, -8 reputación", action: { reputacion: -8, fama: 2 }, cierre: { vistasPct: 0.05 } }
+            },
+            {
+                id: "sponsor_casino", minSubs: 50000, negativo: true,
+                title: "🎰 Te ofrecen un sponsor de casino",
+                text: "La plata es muy buena para el tamaño de tu canal, pero aceptar puede cambiar cómo te ve tu comunidad.",
+                a: { label: "Aceptar la plata", desc: "+$1.500, -12 reputación", action: { dinero: 1500, reputacion: -12, fama: 3 }, cierre: { dineroPct: 0.08 } },
+                b: { label: "Rechazarlo", desc: "+8 reputación, -2% ingresos", action: { reputacion: 8 }, cierre: { dineroPct: -0.02 } }
+            },
+            {
+                id: "hate_raid", minSubs: 10000, negativo: true,
+                title: "🚨 Te cayó un hate raid",
+                text: "Una discusión en otra comunidad terminó mandando gente a tu canal. El chat se llenó de mensajes y la situación puede escalar.",
+                a: { label: "Moderar fuerte", desc: "-6% vistas, +6 comunidad", action: { comunidad: 6 }, cierre: { vistasPct: -0.06 } },
+                b: { label: "Dejar que pase", desc: "+12% vistas, -10 reputación", action: { reputacion: -10, fama: 2 }, cierre: { vistasPct: 0.12 } }
+            },
+            {
+                id: "exponen_en_vivo", minSubs: 25000, negativo: true,
+                title: "📡 Te expusieron en vivo",
+                text: "Otro creador mostró capturas sobre una discusión vieja. Ahora el tema está en todos lados.",
+                a: { label: "Dar contexto", desc: "+5 reputación, -7% vistas", action: { reputacion: 5 }, cierre: { vistasPct: -0.07 } },
+                b: { label: "Contraatacar", desc: "+20% vistas, -12 reputación", action: { reputacion: -12, fama: 4 }, cierre: { vistasPct: 0.20 } }
+            },
+            {
+                id: "hack", minSubs: 5000, negativo: true,
+                title: "🔓 Intentaron hackear tu cuenta",
+                text: "Perdiste acceso durante unas horas y parte de tu audiencia pensó que habías desaparecido.",
+                a: { label: "Pagar seguridad", desc: "-$120, +10 reputación", action: { dinero: -120, reputacion: 10 }, cierre: { vistasPct: -0.03 } },
+                b: { label: "Resolverlo solo", desc: "Sin gasto, pero -12% vistas", action: { reputacion: -4 }, cierre: { vistasPct: -0.12 } }
+            },
+            {
+                id: "vendido", minSubs: 15000, negativo: true,
+                title: "💸 Te gritaron 'vendido'",
+                text: "Una colaboración comercial generó rechazo. Parte de tu comunidad cree que cambiaste tu contenido por plata.",
+                a: { label: "Explicar el acuerdo", desc: "+5 reputación, -4% ingresos", action: { reputacion: 5 }, cierre: { dineroPct: -0.04 } },
+                b: { label: "Seguir igual", desc: "+8% ingresos, -7 reputación", action: { reputacion: -7 }, cierre: { dineroPct: 0.08 } }
+            },
+            {
+                id: "tiktok_viral", minSubs: 500, negativo: false,
+                title: "📱 Un clip explotó en TikTok",
+                text: "Un recorte de tu video salió de tu comunidad y empezó a juntar millones de reproducciones.",
+                a: { label: "Aprovechar el momento", desc: "+28% vistas, +18% subs", action: { fama: 4, networking: 2 }, cierre: { vistasPct: 0.28, subsPct: 0.18 } },
+                b: { label: "Dejar que fluya", desc: "+12% vistas, +6% reputación", action: { reputacion: 6 }, cierre: { vistasPct: 0.12, subsPct: 0.06 } }
+            },
+
+            // ==========================================================
+            // REACCIONES DE CREADORES GRANDES
+            // ==========================================================
+            {
+                id: "coscu_react", minSubs: 5000, negativo: false, creatorId: "coscu",
+                title: "🎬 Coscu reaccionó a tu clip",
+                text: "Tu clip apareció en un stream de Coscu. Su chat empezó a buscar tu canal.",
+                a: { label: "Entrar al stream", desc: "+35% subs, +15 fama", action: { fama: 15, networking: 4 }, cierre: { subsPct: 0.35, vistasPct: 0.18 } },
+                b: { label: "Agradecer y seguir", desc: "+15% subs, +5 reputación", action: { reputacion: 5 }, cierre: { subsPct: 0.15, vistasPct: 0.10 } }
+            },
+            {
+                id: "davo_invite", minSubs: 10000, negativo: false, creatorId: "davoo",
+                title: "🎤 Davo te invitó a un stream",
+                text: "Davo quiere que aparezcas en un stream para hablar de tu contenido y del nicho que compartís.",
+                a: { label: "Aceptar", desc: "+25% subs, +12 reputación", action: { reputacion: 12, networking: 5 }, cierre: { subsPct: 0.25, vistasPct: 0.15 } },
+                b: { label: "Rechazar por agenda", desc: "+3 constancia, oportunidad perdida", action: { constancia: 3 }, cierre: {} }
+            },
+            {
+                id: "spreen_vs", minSubs: 25000, negativo: false, creatorId: "spreen",
+                title: "🎮 Spreen te retó a un VS",
+                text: "Spreen vio un clip tuyo y te tiró un desafío público. Puede ser un salto enorme o un papelón.",
+                a: { label: "Aceptar el VS", desc: "+45% vistas, riesgo de -5% subs", action: { fama: 8, networking: 5 }, cierre: { vistasPct: 0.45, subsPct: -0.05 } },
+                b: { label: "No arriesgar", desc: "+10 reputación, +5% subs", action: { reputacion: 10 }, cierre: { subsPct: 0.05 } }
+            },
+            {
+                id: "ibai_mention", minSubs: 100000, negativo: false, creatorId: "ibai",
+                title: "👑 Ibai te mencionó",
+                text: "Tu nombre apareció en un stream internacional. Gente de afuera empezó a buscar tu canal.",
+                a: { label: "Aprovechar el salto", desc: "+70% subs, +40% vistas", action: { fama: 20, reputacion: 5 }, cierre: { subsPct: 0.70, vistasPct: 0.40 } },
+                b: { label: "Mantener el perfil", desc: "+25% subs, +8 reputación", action: { reputacion: 8 }, cierre: { subsPct: 0.25, vistasPct: 0.15 } }
+            },
+
+            // Eventos neutros para que no todo sea drama.
+            {
+                id: "trend", minSubs: 50, negativo: false,
+                title: "📈 Apareció una tendencia fuerte",
                 text: "El tema está explotando. Podés subirte a la ola o mantener tu identidad.",
-                a: {
-                    label: "Subirme a la tendencia",
-                    desc: "+18% vistas y +10% suscriptores",
-                    action: { algoritmo: 2, creatividad: 1 },
-                    cierre: { vistasPct: 0.18, subsPct: 0.10 }
-                },
-                b: {
-                    label: "Mantener mi estilo",
-                    desc: "+10% ingresos y +8% reputación del trimestre",
-                    action: { creatividad: 2, reputacion: 2 },
-                    cierre: { dineroPct: 0.10 }
-                }
+                a: { label: "Subirme a la tendencia", desc: "+18% vistas y +10% subs", action: { algoritmo: 2, creatividad: 1 }, cierre: { vistasPct: 0.18, subsPct: 0.10 } },
+                b: { label: "Mantener mi estilo", desc: "+10% ingresos y +8 reputación", action: { creatividad: 2, reputacion: 2 }, cierre: { dineroPct: 0.10 } }
             },
             {
-                id: "equipment",
-                minSubs: 500,
-                title: "Tu equipo empieza a quedarse corto",
+                id: "equipment", minSubs: 500, negativo: false,
+                title: "🖥️ Tu equipo empieza a quedarse corto",
                 text: "La audiencia creció y la calidad del contenido empieza a ser un problema.",
-                a: {
-                    label: "Invertir $600",
-                    desc: "+15% vistas y +8% ingresos",
-                    action: { dinero: -600, edicion: 4 },
-                    cierre: { vistasPct: 0.15, dineroPct: 0.08 }
-                },
-                b: {
-                    label: "Aguantar un poco más",
-                    desc: "+10% videos del trimestre",
-                    action: { constancia: 2 },
-                    cierre: { videosPct: 0.10 }
-                }
-            },
-            {
-                id: "community",
-                minSubs: 1000,
-                title: "Tu comunidad te pide algo diferente",
-                text: "Tus seguidores quieren que pruebes un formato que nunca hiciste.",
-                a: {
-                    label: "Probarlo",
-                    desc: "+15% suscriptores y +8% vistas",
-                    action: { carisma: 3 },
-                    cierre: { subsPct: 0.15, vistasPct: 0.08 }
-                },
-                b: {
-                    label: "Mantener el plan",
-                    desc: "+12% ingresos y +5% videos",
-                    action: { constancia: 2, comunidad: 2 },
-                    cierre: { dineroPct: 0.12, videosPct: 0.05 }
-                }
-            },
-            {
-                id: "controversy",
-                minSubs: 10000,
-                title: "Un clip tuyo se empezó a discutir",
-                text: "El tema está circulando. Podés responder y entrar en la conversación o dejar que se enfríe.",
-                a: {
-                    label: "Responder públicamente",
-                    desc: "+25% vistas, pero -5% reputación",
-                    action: { fama: 3, reputacion: -5 },
-                    cierre: { vistasPct: 0.25 }
-                },
-                b: {
-                    label: "No alimentar la discusión",
-                    desc: "+10% suscriptores y +8% ingresos",
-                    action: { reputacion: 3 },
-                    cierre: { subsPct: 0.10, dineroPct: 0.08 }
-                }
+                a: { label: "Invertir $120", desc: "-$120, +15% vistas", action: { dinero: -120, edicion: 4 }, cierre: { vistasPct: 0.15 } },
+                b: { label: "Aguantar", desc: "+10% videos", action: { constancia: 2 }, cierre: { videosPct: 0.10 } }
             }
         ];
 
-        const eventosNegativos = [
-            {
-                id: "upload_backlash",
-                minSubs: 50,
-                title: "Un video recibió críticas",
-                text: "Un recorte del video cayó mal y empezó a circular. Ahora tenés que decidir cómo reaccionar.",
-                a: {
-                    label: "Responder y aclarar",
-                    desc: "-8% vistas, pero +4% reputación",
-                    action: { reputacion: 4 },
-                    cierre: { vistasPct: -0.08 }
-                },
-                b: {
-                    label: "Ignorarlo",
-                    desc: "-4% suscriptores y -6% ingresos",
-                    action: { reputacion: -2 },
-                    cierre: { subsPct: -0.04, dineroPct: -0.06 }
-                }
-            },
-            {
-                id: "bad_algorithm",
-                minSubs: 50,
-                title: "El algoritmo te soltó la mano",
-                text: "Durante unos días tus publicaciones aparecen mucho menos recomendadas.",
-                a: {
-                    label: "Publicar igual",
-                    desc: "-10% vistas, pero +10% videos",
-                    action: { constancia: 2 },
-                    cierre: { vistasPct: -0.10, videosPct: 0.10 }
-                },
-                b: {
-                    label: "Cambiar la estrategia",
-                    desc: "-5% vistas y -3% ingresos, pero +3 algoritmo",
-                    action: { algoritmo: 3 },
-                    cierre: { vistasPct: -0.05, dineroPct: -0.03 }
-                }
-            },
-            {
-                id: "equipment_failure",
-                minSubs: 250,
-                title: "Se rompió parte del equipo",
-                text: "Una falla te obliga a improvisar justo cuando estabas teniendo un buen trimestre.",
-                a: {
-                    label: "Pagar la reparación",
-                    desc: "-$40 y evitás perder rendimiento",
-                    action: { dinero: -40 },
-                    cierre: {}
-                },
-                b: {
-                    label: "Grabar igual",
-                    desc: "No gastás dinero, pero -15% vistas",
-                    action: { edicion: -1 },
-                    cierre: { vistasPct: -0.15 }
-                }
-            },
-            {
-                id: "controversy_bad",
-                minSubs: 5000,
-                title: "Una publicación se malinterpretó",
-                text: "Una frase del video se sacó de contexto y la conversación empieza a crecer.",
-                a: {
-                    label: "Dar la cara",
-                    desc: "+8% vistas, -8 reputación",
-                    action: { reputacion: -8, fama: 2 },
-                    cierre: { vistasPct: 0.08 }
-                },
-                b: {
-                    label: "Bajar el perfil",
-                    desc: "-10% vistas, pero recuperás reputación",
-                    action: { reputacion: 4 },
-                    cierre: { vistasPct: -0.10 }
-                }
-            }
-        ];
+        const validos = eventos.filter(e => subs >= e.minSubs);
+        if (!validos.length) return null;
 
-        const eventosPositivos = eventos.filter(e => Number(p.suscriptores) >= e.minSubs);
-        const eventosMalosValidos = eventosNegativos.filter(e => Number(p.suscriptores) >= e.minSubs);
-        if (!eventosPositivos.length && !eventosMalosValidos.length) return null;
-
-        // Aproximadamente 35% de las veces el cierre trae un problema real.
-        const usarEventoMalo = eventosMalosValidos.length && Math.random() < 0.35;
-        const pool = usarEventoMalo ? eventosMalosValidos : eventosPositivos;
+        // A mayor tamaño del canal, más variedad de interacciones. Los problemas
+        // son frecuentes pero no dominan la partida.
+        const negativos = validos.filter(e => e.negativo);
+        const positivos = validos.filter(e => !e.negativo);
+        const elegirMalo = negativos.length > 0 && Math.random() < (subs >= 100000 ? 0.42 : 0.35);
+        const pool = elegirMalo ? negativos : positivos.length ? positivos : negativos;
         const evento = pool[Math.floor(Math.random() * pool.length)];
+
         this.pendingEvent = JSON.parse(JSON.stringify(evento));
+
+        if (!p.awardsStats) p.awardsStats = { clips: 0, enojos: 0, reacciones: 0 };
+        if (evento.negativo) p.awardsStats.enojos += 1;
+        if (evento.id === "tiktok_viral") p.awardsStats.clips += 1;
+        if (evento.creatorId) p.awardsStats.reacciones += 1;
 
         this.agregarNotificacion({
             tipo: "evento",
@@ -498,6 +455,15 @@ export const gameState = {
             }
         }
 
+        if (evento.creatorId) {
+            const creator = this.creators.find(c => c.id === evento.creatorId);
+            if (creator) {
+                const actual = Number(this.player.relationships?.[creator.id] || 0);
+                this.player.relationships[creator.id] = Math.max(-100, Math.min(100, actual + (opcion === "a" ? 12 : 5)));
+                creator.colaboraciones = (Number(creator.colaboraciones) || 0) + (opcion === "a" ? 1 : 0);
+            }
+        }
+
         const cierre = this.aplicarImpactoCierreTrimestre(evento[opcion].cierre || {});
         this.ultimoEventoResultado = {
             titulo: evento.title,
@@ -526,11 +492,13 @@ export const gameState = {
             { id: "local_shop", name: "Tienda Gamer Local", minSubs: 1000, minFama: 0, payMin: 150, payMax: 450, duration: 1, prestige: 1 },
             { id: "redragon", name: "Redragon", minSubs: 5000, minFama: 3, payMin: 400, payMax: 1000, duration: 2, prestige: 2 },
             { id: "logitech", name: "Logitech G", minSubs: 15000, minFama: 8, payMin: 900, payMax: 2200, duration: 2, prestige: 3 },
-            { id: "redbull", name: "Red Bull", minSubs: 75000, minFama: 15, payMin: 2500, payMax: 6000, duration: 2, prestige: 5 },
-            { id: "adidas", name: "Adidas", minSubs: 300000, minFama: 30, payMin: 8000, payMax: 18000, duration: 2, prestige: 8 },
-            { id: "nike", name: "Nike", minSubs: 750000, minFama: 40, payMin: 12000, payMax: 28000, duration: 2, prestige: 10 },
-            { id: "cocacola", name: "Coca-Cola", minSubs: 1500000, minFama: 50, payMin: 18000, payMax: 40000, duration: 2, prestige: 12 },
-            { id: "apple", name: "Apple", minSubs: 3000000, minFama: 65, payMin: 50000, payMax: 100000, duration: 2, prestige: 15 }
+            { id: "redbull", name: "Red Bull", minSubs: 75000, minFama: 15, payMin: 2500, payMax: 6000, duration: 2, prestige: 5, tipo: "premium" },
+            { id: "casino", name: "Casino Online", minSubs: 50000, minFama: 8, payMin: 4500, payMax: 9000, duration: 1, prestige: 2, tipo: "casino", reputacionAceptar: -10 },
+            { id: "crypto", name: "Crypto Exchange", minSubs: 150000, minFama: 18, payMin: 7000, payMax: 15000, duration: 1, prestige: 3, tipo: "cripto", reputacionAceptar: -8 },
+            { id: "adidas", name: "Adidas", minSubs: 300000, minFama: 30, payMin: 8000, payMax: 18000, duration: 2, prestige: 8, tipo: "premium" },
+            { id: "nike", name: "Nike", minSubs: 750000, minFama: 40, payMin: 12000, payMax: 28000, duration: 2, prestige: 10, tipo: "premium" },
+            { id: "cocacola", name: "Coca-Cola", minSubs: 1500000, minFama: 50, payMin: 18000, payMax: 40000, duration: 2, prestige: 12, tipo: "premium" },
+            { id: "apple", name: "Apple", minSubs: 3000000, minFama: 65, payMin: 50000, payMax: 100000, duration: 2, prestige: 15, tipo: "premium" }
         ];
 
         const p = this.player;
@@ -546,13 +514,26 @@ export const gameState = {
                 Number(p.fama) >= m.minFama &&
                 !yaVistas.has(m.id)
             )
-            .sort((a, b) => b.minSubs - a.minSubs);
+            .sort((a, b) => a.minSubs - b.minSubs);
 
         if (!disponibles.length) return null;
 
-        // Una oferta puede aparecer después de un resultado; las marcas grandes
-        // son más selectivas.
-        const marca = disponibles[0];
+        // No siempre llega la marca más grande disponible. Las ofertas normales
+        // se sienten progresivas y las polémicas (casino/cripto) aparecen como
+        // oportunidades tentadoras, pero no dominan la partida.
+        const polemicas = disponibles.filter(m => m.tipo === "casino" || m.tipo === "cripto");
+        const normales = disponibles.filter(m => m.tipo !== "casino" && m.tipo !== "cripto");
+        let marca;
+        if (polemicas.length && Math.random() < 0.20) {
+            marca = polemicas[Math.floor(Math.random() * polemicas.length)];
+        } else {
+            const cercanas = normales.slice(-Math.min(3, normales.length));
+            if (cercanas.length) {
+                marca = cercanas[Math.floor(Math.random() * cercanas.length)];
+            } else {
+                marca = polemicas[0];
+            }
+        }
         const probabilidad =
             marca.minSubs >= 750000 ? 0.60 :
             marca.minSubs >= 300000 ? 0.52 :
@@ -590,6 +571,11 @@ export const gameState = {
             Number(this.player.fama) + Number(oferta.prestige || 0)
         );
 
+        const reputacionCambio = Number(oferta.reputacionAceptar || 0);
+        if (reputacionCambio) {
+            this.player.reputacion = Math.max(0, Math.min(100, Number(this.player.reputacion) + reputacionCambio));
+        }
+
         this.player.stats.sponsors =
             (Number(this.player.stats.sponsors) || 0) + 1;
 
@@ -607,6 +593,12 @@ export const gameState = {
     rechazarSponsor() {
         const oferta = this.pendingSponsorOffer;
         if (!oferta) return false;
+
+        if (oferta.tipo === "casino" || oferta.tipo === "cripto") {
+            this.player.reputacion = Math.min(100, Number(this.player.reputacion) + 4);
+        } else {
+            this.player.reputacion = Math.min(100, Number(this.player.reputacion) + 1);
+        }
 
         this.sponsors.push({
             ...oferta,
@@ -629,6 +621,7 @@ export const gameState = {
                 creators: this.creators,
                 trends: this.trends,
                 sponsors: this.sponsors,
+                worldNews: this.worldNews,
                 pendingSponsorOffer: this.pendingSponsorOffer,
                 pendingEvent: this.pendingEvent,
                 lastVideo: this.lastVideo,
@@ -665,6 +658,7 @@ export const gameState = {
             this.creators = Array.isArray(data.creators) ? data.creators : crearCreadores();
             this.trends = Array.isArray(data.trends) ? data.trends : [];
             this.sponsors = Array.isArray(data.sponsors) ? data.sponsors : [];
+            this.worldNews = Array.isArray(data.worldNews) ? data.worldNews : [];
 
             this.pendingSponsorOffer = data.pendingSponsorOffer || null;
             this.pendingEvent = data.pendingEvent || null;
@@ -702,6 +696,7 @@ export const gameState = {
         this.player.actividadTrimestre = null;
         this.player.historialTrimestre1 = null;
         this.player.historialTrimestre2 = null;
+        this.player.awardsStats = { clips: 0, enojos: 0, reacciones: 0 };
         this.player.yearStartSnapshot = snapshotAño(this.player);
 
         this.lastQuarterResult = null;
@@ -783,6 +778,7 @@ export const gameState = {
         this.notifications = [];
         this.trends = [];
         this.sponsors = [];
+        this.worldNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
         this.lastVideo = null;
@@ -837,6 +833,7 @@ export function normalizarGameState() {
     }
 
     if (!p.stats) p.stats = crearStats();
+    if (!p.awardsStats) p.awardsStats = { clips: 0, enojos: 0, reacciones: 0 };
     const stats = crearStats();
     for (const key of Object.keys(stats)) {
         if (typeof p.stats[key] !== "number") p.stats[key] = stats[key];
@@ -878,6 +875,7 @@ export function normalizarGameState() {
     if (!Array.isArray(gameState.creators)) gameState.creators = crearCreadores();
     if (!Array.isArray(gameState.trends)) gameState.trends = [];
     if (!Array.isArray(gameState.sponsors)) gameState.sponsors = [];
+    if (!Array.isArray(gameState.worldNews)) gameState.worldNews = [];
     if (!("pendingSponsorOffer" in gameState)) gameState.pendingSponsorOffer = null;
     if (!("pendingEvent" in gameState)) gameState.pendingEvent = null;
 }

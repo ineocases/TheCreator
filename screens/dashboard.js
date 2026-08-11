@@ -31,7 +31,7 @@ export function renderDashboard(el) {
             `<a class="btn primary big pulse" href="#pasanCosas">⚡ PASÓ ALGO</a>`;
     } else if (p.videoSubidoEsteTrimestre) {
         accionPrincipal =
-            `<a class="btn primary big" href="#videoResult">📊 VER RESULTADO</a>`;
+            `<a class="btn primary big" href="#pasanCosas">▶ CONTINUAR</a>`;
     } else {
         accionPrincipal =
             `<a class="btn primary big" href="#publish">📹 ELEGIR VIDEO</a>`;
@@ -166,11 +166,18 @@ export function renderDashboard(el) {
                     <div>
                         <div class="eyebrow">ÚLTIMO TRIMESTRE</div>
                         <h2>${nf(actividad.videos)} publicaciones</h2>
-                        <p class="muted">
-                            ${nf(actividad.vistas)} vistas · +${nf(actividad.suscriptores)} subs · $${nf(actividad.dinero)}
-                        </p>
+                        <p class="muted">${nf(actividad.vistas)} vistas · +${nf(actividad.suscriptores)} subs · $${nf(actividad.dinero)}</p>
                     </div>
-                    <a class="btn ghost" href="#videoResult">VER DETALLE</a>
+                    <a class="btn ghost" href="#pasanCosas">CONTINUAR</a>
+                </section>
+            ` : ""}
+
+            ${(gameState.worldNews || []).length ? `
+                <section class="panel world-news-panel">
+                    <div class="eyebrow">🌎 MIENTRAS TANTO, EN EL MUNDO</div>
+                    <div class="world-news-list">
+                        ${(gameState.worldNews || []).slice(-4).reverse().map(n => `<div class="world-news-row"><span>${n.type === "viral" ? "🔥" : n.type === "drama" ? "⚠️" : "💼"}</span><p>${n.text}</p></div>`).join("")}
+                    </div>
                 </section>
             ` : ""}
 

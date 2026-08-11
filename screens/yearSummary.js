@@ -54,6 +54,15 @@ export function renderYearSummary(el) {
                 `).join("")}
             </div>
 
+            <div class="panel world-movers-panel">
+                <div class="eyebrow">🌎 EL MUNDO TAMBIÉN AVANZÓ</div>
+                <div class="world-movers-list">
+                    ${(gameState.creators || []).slice().sort((a,b) => Number(b.mundo?.nuevosSeguidores || 0) - Number(a.mundo?.nuevosSeguidores || 0)).slice(0,5).map(c => `
+                        <div class="world-mover-row"><strong>${c.nombre}</strong><span>${nf(c.seguidores)} subs</span><b>+${nf(c.mundo?.nuevosSeguidores || 0)}</b></div>
+                    `).join("")}
+                </div>
+            </div>
+
             <div class="panel highlight-panel">
                 <div class="eyebrow">🔥 TU AÑO EN UNA FRASE</div>
                 <h2>${s.crecimientoSubs >= 100000 ? "Dejaste de ser un creador chico." : s.crecimientoSubs >= 10000 ? "Tu canal empezó a llamar la atención." : "Todavía estás construyendo desde abajo."}</h2>
