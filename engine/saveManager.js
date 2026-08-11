@@ -33,6 +33,7 @@ const saveManager = {
                 lastVideoResult: gameState.lastVideoResult,
                 ultimoEventoResultado: gameState.ultimoEventoResultado,
                 lastCollab: gameState.lastCollab,
+                lastMinigame: gameState.lastMinigame,
                 savedAt: Date.now()
             };
 
@@ -115,6 +116,7 @@ const saveManager = {
             gameState.lastVideoResult = parsedData.lastVideoResult || null;
             gameState.ultimoEventoResultado = parsedData.ultimoEventoResultado || null;
             gameState.lastCollab = parsedData.lastCollab || null;
+            gameState.lastMinigame = parsedData.lastMinigame || null;
 
             normalizarGameState();
 

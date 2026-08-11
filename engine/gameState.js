@@ -7,6 +7,7 @@
 // pero no tiene que elegir manualmente cada publicación.
 
 import { creatorsIniciales } from "../data/creators.js";
+import { ensureAdvancedState, advanceEconomy } from "./advancedSystems.js";
 
 const SAVE_KEY = "elCreador_saveData";
 const TRIMESTRES_POR_AÑO = 2;
@@ -161,10 +162,12 @@ export const gameState = {
     lastCollab: null,
 
     adminMode: false,
+    lastMinigame: null,
 
     iniciarPartida(datos = {}) {
         this.player = crearPlayer();
         this.player.partidaIniciada = true;
+        ensureAdvancedState(this);
         this.player.nombre = String(datos.nombre || "Creador").trim() || "Creador";
         this.player.canal = String(datos.canal || "Mi Canal").trim() || "Mi Canal";
         this.player.niche = datos.niche || "Gaming";
@@ -205,6 +208,7 @@ export const gameState = {
             descripcion: `Bienvenido, ${this.player.nombre}. ${this.player.canal} empieza con 50 suscriptores.`
         });
 
+        ensureAdvancedState(this);
         this.guardar();
         return this.player;
     },
@@ -827,6 +831,7 @@ export const gameState = {
                 lastYearSummary: this.lastYearSummary,
                 ultimoEventoResultado: this.ultimoEventoResultado,
                 lastCollab: this.lastCollab,
+                lastMinigame: this.lastMinigame,
                 savedAt: Date.now()
             }));
             return true;
@@ -870,6 +875,7 @@ export const gameState = {
             this.lastYearSummary = data.lastYearSummary || null;
             this.ultimoEventoResultado = data.ultimoEventoResultado || null;
             this.lastCollab = data.lastCollab || null;
+            this.lastMinigame = data.lastMinigame || null;
 
             normalizarGameState();
             return true;
@@ -900,6 +906,7 @@ export const gameState = {
         this.player.historialTrimestre2 = null;
         this.player.awardsStats = { clips: 0, enojos: 0, reacciones: 0 };
         this.player.yearStartSnapshot = snapshotAño(this.player);
+        advanceEconomy(this);
 
         this.lastQuarterResult = null;
         this.lastYearSummary = null;
@@ -995,6 +1002,7 @@ export const gameState = {
         this.lastYearSummary = null;
         this.ultimoEventoResultado = null;
         this.lastCollab = null;
+        this.lastMinigame = null;
 
         try {
             [
@@ -1089,6 +1097,8 @@ export function normalizarGameState() {
     if (!Array.isArray(gameState.sponsors)) gameState.sponsors = [];
     if (!Array.isArray(gameState.worldNews)) gameState.worldNews = [];
     if (!Array.isArray(gameState.worldYearNews)) gameState.worldYearNews = [];
+    ensureAdvancedState(gameState);
+    if (!("lastMinigame" in gameState)) gameState.lastMinigame = null;
     if (!("pendingSponsorOffer" in gameState)) gameState.pendingSponsorOffer = null;
     if (!("pendingEvent" in gameState)) gameState.pendingEvent = null;
     if (!("pendingCollabOffer" in gameState)) gameState.pendingCollabOffer = null;

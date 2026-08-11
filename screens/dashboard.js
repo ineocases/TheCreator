@@ -66,6 +66,13 @@ export function renderDashboard(el) {
 
             ${hizoPretemporada && !p.videoSubidoEsteTrimestre && !pendingEvent && !sponsor && !collab ? `<a href="#publish" class="btn primary big pulse publish-main-cta">📹 PUBLICAR VIDEO</a>` : ""}
 
+            <div class="quick-actions">
+                <a class="action-card" href="#store"><b>🛒 Tienda</b><span>Setup y mejoras</span></a>
+                <a class="action-card" href="#collabs"><b>🤝 Colabs</b><span>Invitaciones y relaciones</span></a>
+                <a class="action-card" href="#sponsors"><b>💼 Sponsors</b><span>Ofertas activas</span></a>
+                <a class="action-card" href="#velada"><b>🥊 Velada</b><span>Desde 50K subs</span></a>
+            </div>
+
             <div class="dashboard-grid">
                 <section class="panel">
                     <div class="eyebrow">📈 ESTADO DEL CANAL</div>
