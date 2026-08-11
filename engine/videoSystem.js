@@ -335,22 +335,22 @@ function simularVideoSecundario() {
     const a = p.atributos || {};
 
     const calidad =
-        0.65 +
+        0.78 +
         clamp(
             (potenciaBase(p) +
-                (Number(a.constancia) || 0) +
-                (Number(a.algoritmo) || 0)) / 220,
+                (Number(a.constancia) || 0) * 1.2 +
+                (Number(a.algoritmo) || 0) * 0.9 +
+                (Number(a.creatividad) || 0) * 0.6) / 260,
             0,
-            0.8
+            0.9
         );
 
     let vistas = baseVistasPorVideo(p, calidad);
 
-    // El contenido automático puede tener picos, pero con menor frecuencia.
     const probViral = clamp(
-        0.12 + (Number(a.creatividad) || 0) * 0.018,
-        0.12,
-        2.2
+        0.08 + (Number(a.creatividad) || 0) * 0.012 + (Number(p.fama) || 0) * 0.003,
+        0.08,
+        2.0
     );
 
     const viral = Math.random() * 100 < probViral;
@@ -358,34 +358,37 @@ function simularVideoSecundario() {
 
     vistas = Math.max(1, Math.floor(vistas));
 
-    const conversion =
-        0.0022 +
-        clamp((Number(a.carisma) || 0) / 100, 0, 1) * 0.0024;
-
-    const subs = Math.max(
-        0,
-        Math.floor(
-            vistas *
-            conversion *
-            randomFloat(0.75, 1.25)
-        )
+    // IMPORTANTE: no redondeamos subs/dinero por video.
+    // Con un canal pequeño, 90 vistas * 0.002 = 0.18 subs.
+    // Si hacemos Math.floor() en cada video, 128 videos daban 0 subs.
+    // Acumulamos decimales durante el trimestre y redondeamos una sola vez.
+    const conversion = clamp(
+        0.0028 +
+        clamp((Number(a.carisma) || 0) / 100, 0, 1) * 0.0028 +
+        clamp((Number(a.comunidad) || 50) / 100, 0, 1) * 0.0008,
+        0.0025,
+        0.0075
     );
 
-    const ingresos = Math.max(
-        0,
-        Math.floor(
-            vistas *
-            (0.0065 + (Number(a.marketing) || 0) * 0.00045)
-        )
-    );
+    const subs =
+        vistas *
+        conversion *
+        randomFloat(0.80, 1.22);
 
-    const fama =
-        Math.random() < 0.045 ? 1 : 0;
+    const rpm =
+        0.008 +
+        (Number(a.marketing) || 0) * 0.00042 +
+        (Number(p.fama) || 0) * 0.000025;
+
+    const dinero =
+        vistas * rpm * randomFloat(0.88, 1.18);
+
+    const fama = Math.random() < 0.035 ? 1 : 0;
 
     return {
         vistas,
         suscriptores: subs,
-        dinero: ingresos,
+        dinero,
         famaGanada: fama,
         viral
     };
@@ -396,14 +399,13 @@ export function procesarPublicacionTrimestre(
     enfoquePrincipal,
     enfoqueSecundario
 ) {
-    // 1 video elegido por el jugador.
     const manualResult = procesarPublicacionVideo(
         titulo,
         enfoquePrincipal,
         enfoqueSecundario
     );
 
-    // El canal publica entre 30 y 150 videos PROPIOS en el trimestre.
+    // Entre 30 y 150 videos TOTALES del propio creador en el trimestre.
     const totalVideos = random(30, 150);
     const videosDelResto = Math.max(0, totalVideos - 1);
 
@@ -412,7 +414,10 @@ export function procesarPublicacionTrimestre(
     let simDinero = 0;
     let simFama = 0;
     let simVirales = 0;
+    let mejorSimulado = 0;
 
+    // Simulamos el volumen sin aplicar Math.floor() a cada video.
+    // Así 100 videos con 0.2 subs promedio no terminan en 0 subs.
     for (let i = 0; i < videosDelResto; i++) {
         const resultado = simularVideoSecundario();
 
@@ -420,24 +425,42 @@ export function procesarPublicacionTrimestre(
         simSubs += resultado.suscriptores;
         simDinero += resultado.dinero;
         simFama += resultado.famaGanada;
+        mejorSimulado = Math.max(mejorSimulado, resultado.vistas);
 
         if (resultado.viral) simVirales++;
-
-        aplicarResultado(resultado, true);
     }
 
-    const p = gameState.player;
+    const simSubsEnteros = Math.max(0, Math.floor(simSubs));
+    const simDineroEntero = Math.max(0, Math.floor(simDinero));
+    const simFamaEntera = Math.max(0, Math.floor(simFama));
 
-    p.fama = clamp(Number(p.fama), 0, 100);
+    // Aplicamos TODO el bloque simulado de una vez.
+    const p = gameState.player;
+    p.vistasTotales += simVistas;
+    p.suscriptores += simSubsEnteros;
+    p.dinero += simDineroEntero;
+    p.ingresosTrimestre += simDineroEntero;
+    p.fama = clamp(Number(p.fama) + simFamaEntera, 0, 100);
+
+    p.videosSubidos += videosDelResto;
+    if (!p.stats) p.stats = {};
+    p.stats.videosPublicados =
+        (Number(p.stats.videosPublicados) || 0) + videosDelResto;
+    p.stats.mejorVideo = Math.max(
+        Number(p.stats.mejorVideo) || 0,
+        mejorSimulado
+    );
+    p.stats.videosVirales =
+        (Number(p.stats.videosVirales) || 0) + simVirales;
 
     const actividad = {
         año: gameState.time.año,
         trimestre: gameState.time.trimestre,
         videos: totalVideos,
-        vistas: manualResult.vistas + simVistas,
-        suscriptores: manualResult.suscriptores + simSubs,
-        dinero: manualResult.dinero + simDinero,
-        fama: manualResult.famaGanada + simFama,
+        vistas: Math.floor(manualResult.vistas + simVistas),
+        suscriptores: manualResult.suscriptores + simSubsEnteros,
+        dinero: manualResult.dinero + simDineroEntero,
+        fama: manualResult.famaGanada + simFamaEntera,
         virales: (manualResult.viral ? 1 : 0) + simVirales
     };
 
@@ -457,21 +480,21 @@ export function procesarPublicacionTrimestre(
         totalDinero: actividad.dinero,
         totalFama: actividad.fama,
         simulatedVideos: videosDelResto,
-        simVistas,
-        simSubs,
-        simDinero,
-        simFama,
+        simVistas: Math.floor(simVistas),
+        simSubs: simSubsEnteros,
+        simDinero: simDineroEntero,
+        simFama: simFamaEntera,
         virales: actividad.virales
     };
 
     gameState.lastQuarterResult = quarterResult;
 
-    // Las decisiones/eventos y las marcas aparecen DESPUÉS de jugar.
+    // Los eventos y sponsors aparecen después del resultado, nunca como botones
+    // que el jugador tenga que buscar manualmente.
     gameState.generarEventoPendiente();
     gameState.generarOfertaSponsor();
 
     gameState.guardar();
-
     return quarterResult;
 }
 

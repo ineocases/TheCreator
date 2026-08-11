@@ -59,9 +59,8 @@ export function renderYearSummary(el) {
                 <p>${s.mejorVideo > 0 ? `Tu mejor video llegó a ${nf(s.mejorVideo)} vistas.` : "Todavía no tuviste un gran pico de audiencia."}</p>
             </div>
 
-            <div class="continue-row">
-                <a class="btn ghost" href="#dashboard">Volver</a>
-                <a class="btn gold" href="#awards">🏆 IR A LOS COSCU ARMY AWARDS</a>
+            <div class="continue-row single-next">
+                <a class="btn gold big next-button" href="#awards">🏆 SIGUIENTE: COSCU ARMY AWARDS</a>
             </div>
         </div>
     `;

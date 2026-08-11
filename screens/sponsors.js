@@ -4,6 +4,25 @@ import { renderHeaderHud } from "../components/HeaderHud.js";
 
 const nf = n => Number(n || 0).toLocaleString();
 
+
+function continuarDespuesDeSponsor() {
+    setTimeout(() => {
+        if (gameState.pendingEvent) {
+            window.location.hash = "#pasanCosas";
+            return;
+        }
+
+        if (gameState.time.trimestre === 2) {
+            gameState.finalizarAño();
+            window.location.hash = "#yearSummary";
+            return;
+        }
+
+        gameState.nextQuarter();
+        window.location.hash = "#publish";
+    }, 180);
+}
+
 export function renderSponsors(el) {
     const container = el || document.getElementById("sponsorsScreen");
     if (!container) return;
@@ -54,11 +73,11 @@ export function renderSponsors(el) {
 
     container.querySelector("#acceptSponsor")?.addEventListener("click", () => {
         gameState.aceptarSponsor();
-        renderSponsors(container);
+        continuarDespuesDeSponsor();
     });
     container.querySelector("#rejectSponsor")?.addEventListener("click", () => {
         gameState.rechazarSponsor();
-        renderSponsors(container);
+        continuarDespuesDeSponsor();
     });
 
     return container;

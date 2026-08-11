@@ -28,7 +28,23 @@ export function renderPasanCosas(el) {
     container.querySelectorAll("[data-option]").forEach(button => {
         button.addEventListener("click", () => {
             gameState.resolverEvento(button.dataset.option);
-            window.location.hash = "#dashboard";
+
+            // Después de decidir, el juego sigue solo al siguiente paso.
+            setTimeout(() => {
+                if (gameState.pendingSponsorOffer) {
+                    window.location.hash = "#sponsors";
+                    return;
+                }
+
+                if (gameState.time.trimestre === 2) {
+                    gameState.finalizarAño();
+                    window.location.hash = "#yearSummary";
+                    return;
+                }
+
+                gameState.nextQuarter();
+                window.location.hash = "#publish";
+            }, 180);
         });
     });
     return container;

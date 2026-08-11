@@ -129,18 +129,32 @@ export function renderVideoResult(el) {
                 </div>
             ` : ""}
 
-            <div class="continue-row">
-                <a class="btn ghost" href="#dashboard">Volver al dashboard</a>
-                ${evento
-                    ? `<a class="btn primary" href="#pasanCosas">⚡ RESOLVER DECISIÓN</a>`
-                    : `<button id="continueAfterVideo" class="btn primary">
-                        ${finDeAño ? "📊 VER RESUMEN DEL AÑO" : "▶ CONTINUAR AL TRIMESTRE 2"}
-                    </button>`}
+            <div class="continue-row single-next">
+                <button id="continueAfterVideo" class="btn primary big next-button">
+                    ${evento
+                        ? "⚡ SIGUIENTE"
+                        : sponsor
+                            ? "💼 SIGUIENTE"
+                            : finDeAño
+                                ? "🏆 SIGUIENTE: RESUMEN DEL AÑO"
+                                : "▶ SIGUIENTE: TRIMESTRE 2"}
+                </button>
             </div>
         </div>
     `;
 
     container.querySelector("#continueAfterVideo")?.addEventListener("click", () => {
+        // Una sola flecha de avance controla todo el flujo.
+        if (evento) {
+            window.location.hash = "#pasanCosas";
+            return;
+        }
+
+        if (sponsor) {
+            window.location.hash = "#sponsors";
+            return;
+        }
+
         if (finDeAño) {
             gameState.finalizarAño();
             gameState.guardar();
@@ -150,7 +164,7 @@ export function renderVideoResult(el) {
 
         gameState.nextQuarter();
         gameState.guardar();
-        window.location.hash = "#dashboard";
+        window.location.hash = "#publish";
     });
 
     return container;
