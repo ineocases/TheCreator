@@ -20,31 +20,9 @@ export function renderDashboard(el) {
     const pendingEvent = gameState.pendingEvent;
     const collab = gameState.pendingCollabOffer;
 
-    let accionPrincipal;
-    if (!hizoPretemporada) {
-        accionPrincipal = `<a class="btn primary big pulse" href="#pretemporada">⚡ PRETEMPORADA</a>`;
-    } else if (pendingEvent) {
-        accionPrincipal = `<a class="btn primary big pulse" href="#pasanCosas">⚡ PASÓ ALGO</a>`;
-    } else if (collab) {
-        accionPrincipal = `<a class="btn gold big pulse" href="#collabs">🤝 INVITACIÓN</a>`;
-    } else if (sponsor) {
-        accionPrincipal = `<a class="btn gold big pulse" href="#sponsors">💼 PROPUESTA</a>`;
-    } else if (p.videoSubidoEsteTrimestre) {
-        accionPrincipal = `<a class="btn primary big" href="#pasanCosas">▶ CONTINUAR</a>`;
-    } else {
-        accionPrincipal = `<a class="btn primary big" href="#publish">📹 PUBLICAR VIDEO</a>`;
-    }
-
     const progresoAño = p.trimestre === 1 ? 50 : 100;
     const mejorado = p.pretemporada?.atributo;
 
-    const menu = `
-        <nav class="channel-menu" aria-label="Menú de carrera">
-            <a href="#store" class="channel-menu-btn">🛒 <span>Tienda</span></a>
-            <a href="#collabs" class="channel-menu-btn">🤝 <span>Colabs</span></a>
-            <a href="#sponsors" class="channel-menu-btn">💼 <span>Sponsors</span></a>
-            <a href="#awards" class="channel-menu-btn">🏆 <span>Awards</span></a>
-        </nav>`;
 
     const skills = [
         ["✂️ Edición", "edicion"], ["😎 Carisma", "carisma"], ["🤖 Algoritmo", "algoritmo"],
@@ -61,11 +39,9 @@ export function renderDashboard(el) {
                     <div class="eyebrow">CARRERA · ${p.año} · T${p.trimestre}/2</div>
                     <div class="channel-title-row">
                         <h1 class="page-title">${p.canal}</h1>
-                        ${menu}
                     </div>
                     <p class="page-subtitle">${p.niche}</p>
                 </div>
-                <div class="dashboard-primary-action">${accionPrincipal}</div>
             </div>
 
             <div class="season-progress panel">

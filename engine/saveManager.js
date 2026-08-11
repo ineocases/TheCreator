@@ -23,6 +23,7 @@ const saveManager = {
                 trends: gameState.trends,
                 sponsors: gameState.sponsors,
                 worldNews: gameState.worldNews,
+                worldYearNews: gameState.worldYearNews,
                 pendingSponsorOffer: gameState.pendingSponsorOffer,
                 pendingEvent: gameState.pendingEvent,
                 pendingCollabOffer: gameState.pendingCollabOffer,
@@ -104,6 +105,7 @@ const saveManager = {
             }
 
             gameState.worldNews = Array.isArray(parsedData.worldNews) ? parsedData.worldNews : [];
+            gameState.worldYearNews = Array.isArray(parsedData.worldYearNews) ? parsedData.worldYearNews : [];
 
             gameState.pendingSponsorOffer = parsedData.pendingSponsorOffer || null;
             gameState.pendingEvent = parsedData.pendingEvent || null;

@@ -148,6 +148,9 @@ export function simulateWorld(game) {
 
     simularColaboracionNPC(game, news);
     game.worldNews = news.slice(-12);
+    game.worldYearNews = Array.isArray(game.worldYearNews) ? game.worldYearNews : [];
+    game.worldYearNews.push(...news);
+    game.worldYearNews = game.worldYearNews.slice(-40);
     return news;
 }
 

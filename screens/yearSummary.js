@@ -1,79 +1,63 @@
-// screens/yearSummary.js
 import { gameState } from "../engine/gameState.js";
 import { renderHeaderHud } from "../components/HeaderHud.js";
 
 const nf = n => Number(n || 0).toLocaleString();
-const pct = n => `${Number(n || 0).toFixed(0)}%`;
 
 export function renderYearSummary(el) {
     const container = el || document.getElementById("yearSummaryScreen");
     if (!container) return;
     const s = gameState.lastYearSummary;
-    const p = gameState.player;
     if (!s) {
         container.innerHTML = `<div class="page-shell">${renderHeaderHud()}<div class="panel center"><h2>Todavía no terminó el año.</h2><a class="btn primary" href="#dashboard">Volver</a></div></div>`;
         return container;
     }
 
-    const crecimiento = s.suscriptoresInicio > 0 ? (s.crecimientoSubs / s.suscriptoresInicio) * 100 : 0;
-    const ingresosGenerados = Number(s.ingresosGenerados ?? p.ingresosGenerados ?? 0);
-    const t1 = s.trimestre1;
-    const t2 = s.trimestre2;
+    const worldNews = Array.isArray(gameState.worldYearNews) ? gameState.worldYearNews : (gameState.worldNews || []);
+    const dramas = worldNews.filter(n => n.type === "drama");
+    const highlights = worldNews.filter(n => n.type !== "drama").slice(-5);
 
     container.innerHTML = `
         <div class="page-shell year-summary-page">
             ${renderHeaderHud()}
             <div class="year-cover">
                 <div class="eyebrow">TEMPORADA ${s.año}</div>
-                <h1>Así fue tu temporada.</h1>
-                <p>Dos trimestres. Un año de carrera. Así terminó la temporada.</p>
+                <h1>Así terminó tu año.</h1>
+                <p>Los dos trimestres quedan unificados en un solo cierre.</p>
             </div>
 
             <div class="stat-grid four">
-                <div class="stat-tile"><span>👥 Suscriptores</span><strong>${nf(s.suscriptoresFin)}</strong><small>+${nf(s.crecimientoSubs)} este año</small></div>
-                <div class="stat-tile"><span>👁️ Vistas</span><strong>${nf(s.vistasGanadas)}</strong><small>vistas en la temporada</small></div>
-                <div class="stat-tile"><span>🎬 Videos</span><strong>${nf(s.videosPublicados)}</strong><small>jugados</small></div>
-                <div class="stat-tile"><span>💰 Dinero</span><strong>$${nf(ingresosGenerados)}</strong><small>ingresos generados</small></div>
+                <div class="stat-tile"><span>👥 Suscriptores</span><strong>${nf(s.suscriptoresFin)}</strong><small>total al cierre</small></div>
+                <div class="stat-tile"><span>👁️ Vistas</span><strong>+${nf(s.vistasGanadas)}</strong><small>en la temporada</small></div>
+                <div class="stat-tile"><span>🎬 Videos</span><strong>${nf(s.videosPublicados)}</strong><small>publicados</small></div>
+                <div class="stat-tile"><span>💰 Ingresos</span><strong>+$${nf(s.ingresosGenerados)}</strong><small>generados</small></div>
             </div>
 
-            <div class="panel">
-                <div class="eyebrow">📈 CRECIMIENTO</div>
-                <div class="growth-line"><strong>${nf(s.suscriptoresInicio)}</strong><span>→</span><strong class="accent">${nf(s.suscriptoresFin)}</strong></div>
-                <div class="progress"><i style="width:${Math.min(100, Math.max(4, crecimiento / 5))}%"></i></div>
-                <p class="muted">Creciste un ${pct(crecimiento)} respecto al comienzo del año.</p>
-            </div>
-
-            <div class="quarter-grid">
-                ${[t1,t2].map((t,i) => `
-                    <div class="panel">
-                        <div class="eyebrow">TRIMESTRE ${i+1}</div>
-                        <h2>${nf(t?.videos)} videos</h2>
-                        <p>+${nf(t?.suscriptores)} subs · +${nf(t?.vistas)} vistas</p>
-                        <p class="muted">$${nf(t?.dinero)} generados · ${nf(t?.virales)} virales</p>
-                    </div>
-                `).join("")}
-            </div>
-
-            <div class="panel world-movers-panel">
-                <div class="eyebrow">🌎 EL MUNDO TAMBIÉN AVANZÓ</div>
-                <div class="world-movers-list">
-                    ${(gameState.creators || []).slice().sort((a,b) => Number(b.mundo?.nuevosSeguidores || 0) - Number(a.mundo?.nuevosSeguidores || 0)).slice(0,5).map(c => `
-                        <div class="world-mover-row"><strong>${c.nombre}</strong><span>${nf(c.seguidores)} subs</span><b>+${nf(c.mundo?.nuevosSeguidores || 0)}</b></div>
-                    `).join("")}
+            <section class="panel season-total-panel">
+                <div class="eyebrow">📊 TEMPORADA COMPLETA</div>
+                <div class="season-total-grid">
+                    <div><small>Seguidores al comenzar</small><b>${nf(s.suscriptoresInicio)}</b></div>
+                    <div><small>Seguidores al terminar</small><b>${nf(s.suscriptoresFin)}</b></div>
+                    <div><small>Vistas ganadas</small><b>${nf(s.vistasGanadas)}</b></div>
+                    <div><small>Videos publicados</small><b>${nf(s.videosPublicados)}</b></div>
+                    <div><small>Videos virales</small><b>${nf(s.videosVirales)}</b></div>
+                    <div><small>Fama</small><b>${nf(s.famaFin)}/100</b></div>
                 </div>
-            </div>
+            </section>
+
+            <section class="panel world-movers-panel">
+                <div class="eyebrow">🌎 MIENTRAS TANTO, EN EL MUNDO</div>
+                ${dramas.length ? `<div class="world-drama-list">${dramas.slice(-8).reverse().map(n => `<div class="world-drama-row"><span>⚠️</span><div><strong>${n.creator || "Un creador"}</strong><p>${n.text}</p></div></div>`).join("")}</div>` : `<p class="muted">No hubo una gran funa en la temporada.</p>`}
+                ${highlights.length ? `<div class="world-news-list year-world-news">${highlights.map(n => `<div class="world-news-row"><span>${n.type === "viral" ? "🔥" : n.type === "collab" ? "🤝" : "💼"}</span><p>${n.text}</p></div>`).join("")}</div>` : ""}
+            </section>
 
             <div class="panel highlight-panel">
                 <div class="eyebrow">🔥 TU AÑO EN UNA FRASE</div>
-                <h2>${s.crecimientoSubs >= 100000 ? "Dejaste de ser un creador chico." : s.crecimientoSubs >= 10000 ? "Tu canal empezó a llamar la atención." : "Todavía estás construyendo desde abajo."}</h2>
+                <h2>${s.crecimientoSubs >= 100000 ? "Tu canal dio un salto enorme." : s.crecimientoSubs >= 10000 ? "Tu canal empezó a hacerse notar." : "Todavía estás construyendo desde abajo."}</h2>
                 <p>${s.mejorVideo > 0 ? `Tu mejor video llegó a ${nf(s.mejorVideo)} vistas.` : "Todavía no tuviste un gran pico de audiencia."}</p>
             </div>
 
-            <div class="continue-row single-next">
-                <a class="btn gold big next-button" href="#awards">🏆 SIGUIENTE: COSCU ARMY AWARDS</a>
-            </div>
-        </div>
-    `;
+            <div class="continue-row single-next"><a class="btn gold big next-button" href="#awards">🏆 SIGUIENTE: COSCU ARMY AWARDS</a></div>
+        </div>`;
     return container;
 }
 

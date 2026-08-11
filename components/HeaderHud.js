@@ -16,7 +16,7 @@ export function renderHeaderHud() {
         <header class="game-hud-compact">
             <div class="hud-channel">
                 <strong>${p.canal || "Mi Canal"}</strong>
-                <span>${p.nombre || "Creador"} · ${p.niche || "Gaming"}</span>
+                <span>${p.niche || "Gaming"}</span>
             </div>
 
             <div class="hud-season">
@@ -24,9 +24,16 @@ export function renderHeaderHud() {
                 <b>${año} · T${trimestre}/2</b>
             </div>
 
+            <nav class="hud-menu" aria-label="Menú de carrera">
+                <a href="#store" class="hud-menu-btn">🛒 <span>Tienda</span></a>
+                <a href="#collabs" class="hud-menu-btn">🤝 <span>Colabs</span></a>
+                <a href="#sponsors" class="hud-menu-btn">💼 <span>Sponsors</span></a>
+                <a href="#awards" class="hud-menu-btn">🏆 <span>Awards</span></a>
+            </nav>
+
             <div class="hud-numbers">
                 <div><small>SUBS</small><b>${nf(subs)}</b></div>
-                <div><small>FAMA</small><b>${nf(fama)}</b></div>
+                <div><small>FAMA</small><b>${nf(fama)}/100</b></div>
                 <div><small>$</small><b>$${nf(dinero)}</b></div>
             </div>
         </header>

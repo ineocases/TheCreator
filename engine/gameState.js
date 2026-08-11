@@ -24,6 +24,20 @@ function randomFloat(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function costoVuelo(pais) {
+    const costos = {
+        "Argentina": 0,
+        "Uruguay": 180,
+        "Chile": 350,
+        "Brasil": 550,
+        "Colombia": 850,
+        "México": 1100,
+        "España": 1800,
+        "Estados Unidos": 2200
+    };
+    return costos[pais] ?? 900;
+}
+
 function crearAtributos() {
     return {
         edicion: 10,
@@ -133,6 +147,7 @@ export const gameState = {
     trends: [],
     sponsors: [],
     worldNews: [],
+    worldYearNews: [],
 
     pendingSponsorOffer: null,
     pendingEvent: null,
@@ -166,6 +181,7 @@ export const gameState = {
         this.trends = [];
         this.sponsors = [];
         this.worldNews = [];
+        this.worldYearNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
         this.pendingCollabOffer = null;
@@ -173,6 +189,8 @@ export const gameState = {
         this.lastVideoResult = null;
         this.lastQuarterResult = null;
         this.lastYearSummary = null;
+        this.worldNews = [];
+        this.worldYearNews = [];
         this.ultimoEventoResultado = null;
         this.lastCollab = null;
 
@@ -563,11 +581,13 @@ export const gameState = {
         const creadorSubs = Math.max(1000, Number(creador.seguidores) || 1000);
         const vistas = Math.max(100, Math.round(creadorSubs * randomFloat(0.015, 0.055)));
         const subsGanados = Math.max(10, Math.round(vistas * randomFloat(0.045, 0.14)));
+        const vuelo = costoVuelo(creador.pais || "Argentina");
 
         this.pendingCollabOffer = {
             id: crearId("collab"), creatorId: creador.id, creatorName: creador.nombre,
             creatorFollowers: creadorSubs, año: this.time.año, trimestre: this.time.trimestre,
-            niche: creador.nicho, direction: "incoming", reward: { vistas, subs: subsGanados }, estado: "pendiente"
+            niche: creador.nicho, pais: creador.pais || "Argentina", costoVuelo: vuelo,
+            direction: "incoming", reward: { vistas, subs: subsGanados }, estado: "pendiente"
         };
         this.agregarNotificacion({ tipo: "collab", titulo: `🤝 ${creador.nombre} quiere colaborar con vos`, descripcion: "Una colaboración surgió de forma orgánica en el mundo." });
         this.guardar();
@@ -601,7 +621,8 @@ export const gameState = {
         this.pendingCollabOffer = {
             id: crearId("collab_out"), creatorId, creatorName: creador.nombre,
             creatorFollowers: Number(creador.seguidores) || 0, año: this.time.año,
-            trimestre: this.time.trimestre, niche: creador.nicho, direction: "outgoing",
+            trimestre: this.time.trimestre, niche: creador.nicho, pais: creador.pais || "Argentina",
+            costoVuelo: costoVuelo(creador.pais || "Argentina"), direction: "outgoing",
             reward: { vistas, subs }, estado: "pendiente"
         };
         this.agregarNotificacion({ tipo: "collab", titulo: `📨 ${creador.nombre} aceptó tu propuesta`, descripcion: "La relación que construiste habilitó una nueva colaboración." });
@@ -611,6 +632,13 @@ export const gameState = {
     aceptarCollab() {
         const oferta = this.pendingCollabOffer;
         if (!oferta) return false;
+        const costo = Number(oferta.costoVuelo) || 0;
+        if (costo > Number(this.player.dinero || 0)) {
+            this.agregarNotificacion({ tipo: "collab", titulo: "✈️ No alcanza para el viaje", descripcion: `Necesitás $${costo.toLocaleString()} para viajar a ${oferta.pais || "el exterior"}.` });
+            this.guardar();
+            return false;
+        }
+        if (costo > 0) this.player.dinero -= costo;
         const creador = this.creators.find(c => c.id === oferta.creatorId);
         const vistas = Number(oferta.reward?.vistas) || 0;
         const subs = Number(oferta.reward?.subs) || 0;
@@ -622,7 +650,7 @@ export const gameState = {
         this.player.relationships[oferta.creatorId] = Math.min(100, Number(this.player.relationships?.[oferta.creatorId] || 0) + 15);
         if (creador) creador.colaboraciones = (Number(creador.colaboraciones) || 0) + 1;
 
-        this.lastCollab = { ...oferta, estado: "aceptada", vistas, subs, fecha: Date.now() };
+        this.lastCollab = { ...oferta, estado: "aceptada", vistas, subs, costoVuelo: costo, fecha: Date.now() };
         this.pendingCollabOffer = null;
         this.agregarNotificacion({
             tipo: "collab",
@@ -789,6 +817,7 @@ export const gameState = {
                 trends: this.trends,
                 sponsors: this.sponsors,
                 worldNews: this.worldNews,
+                worldYearNews: this.worldYearNews,
                 pendingSponsorOffer: this.pendingSponsorOffer,
                 pendingEvent: this.pendingEvent,
                 pendingCollabOffer: this.pendingCollabOffer,
@@ -830,6 +859,7 @@ export const gameState = {
             this.trends = Array.isArray(data.trends) ? data.trends : [];
             this.sponsors = Array.isArray(data.sponsors) ? data.sponsors : [];
             this.worldNews = Array.isArray(data.worldNews) ? data.worldNews : [];
+            this.worldYearNews = Array.isArray(data.worldYearNews) ? data.worldYearNews : [];
 
             this.pendingSponsorOffer = data.pendingSponsorOffer || null;
             this.pendingEvent = data.pendingEvent || null;
@@ -955,6 +985,7 @@ export const gameState = {
         this.trends = [];
         this.sponsors = [];
         this.worldNews = [];
+        this.worldYearNews = [];
         this.pendingSponsorOffer = null;
         this.pendingEvent = null;
         this.pendingCollabOffer = null;
@@ -1057,6 +1088,7 @@ export function normalizarGameState() {
     if (!Array.isArray(gameState.trends)) gameState.trends = [];
     if (!Array.isArray(gameState.sponsors)) gameState.sponsors = [];
     if (!Array.isArray(gameState.worldNews)) gameState.worldNews = [];
+    if (!Array.isArray(gameState.worldYearNews)) gameState.worldYearNews = [];
     if (!("pendingSponsorOffer" in gameState)) gameState.pendingSponsorOffer = null;
     if (!("pendingEvent" in gameState)) gameState.pendingEvent = null;
     if (!("pendingCollabOffer" in gameState)) gameState.pendingCollabOffer = null;

@@ -41,9 +41,17 @@ function analizarTema(tema, niche) {
     const personasGigantes = ["messi", "cristiano ronaldo", "ibai", "coscu", "spreen", "davoo", "la cobra"];
     const personas = ["messi", "cristiano ronaldo", "coscu", "spreen", "davoo", "la cobra", "ibai"];
     const juegosMuyBuscados = ["gta vi", "fortnite", "minecraft", "roblox", "valorant", "ea sports fc"];
+    const p = gameState.player || {};
+    const subs = Number(p.suscriptores || 0);
+    const rel = Object.values(p.relationships || {}).some(v => Number(v) >= 45);
 
     if (personasGigantes.some(x => t.includes(x))) {
-        return { impacto: 1.55, tipo: "persona", entidad: tema, hook: "PERSONA_GRANDE" };
+        // Nombrar a una celebridad no significa tener acceso a ella.
+        // Los encuentros reales requieren audiencia o una relación fuerte.
+        const acceso = subs >= 100000 || rel || Number(p.fama || 0) >= 65;
+        return acceso
+            ? { impacto: 1.55, tipo: "persona", entidad: tema, hook: "PERSONA_GRANDE" }
+            : { impacto: 0.98, tipo: "persona", entidad: tema, hook: "PERSONA_INALCANZABLE" };
     }
     if (personas.some(x => t.includes(x))) {
         return { impacto: 1.30, tipo: "persona", entidad: tema, hook: "PERSONA" };
@@ -63,6 +71,10 @@ function generarTitulo(formato, tema) {
 
     // Las personas/acontecimientos excepcionales cambian el título porque
     // representan una historia que realmente merece ser clickeada.
+    if (analisis.hook === "PERSONA_INALCANZABLE") {
+        return `INTENTÉ CONOCER A ${t.toUpperCase()} Y ESTO PASÓ`;
+    }
+
     if (analisis.hook === "PERSONA_GRANDE") {
         const persona = analisis.entidad;
         if (formato.name === "Viajando a" || formato.name === "24 Horas con") return `UN DÍA CON ${persona.toUpperCase()} 😳`;

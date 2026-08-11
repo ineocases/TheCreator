@@ -778,3 +778,31 @@ body{
         width: 100%;
     }
 }
+
+/* =========================================================
+   HEADER / MENÚ PRINCIPAL — MOBILE FIRST
+   ========================================================= */
+.game-hud-compact{grid-template-columns:minmax(110px,1fr) auto auto minmax(150px,auto);}
+.hud-menu{display:flex;justify-content:flex-end;align-items:center;gap:5px;min-width:0;}
+.hud-menu-btn{display:inline-flex;align-items:center;gap:4px;padding:7px 9px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:8px;text-decoration:none;color:#fff;font-size:.68rem;font-weight:800;white-space:nowrap;transition:.15s ease;}
+.hud-menu-btn:hover{background:rgba(229,9,20,.14);border-color:rgba(229,9,20,.35);transform:translateY(-1px);}
+.season-total-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;}
+.season-total-grid>div{padding:11px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:9px;}
+.season-total-grid small{display:block;color:var(--text-muted);font-size:.65rem;}
+.season-total-grid b{display:block;margin-top:4px;font-size:1rem;}
+.world-drama-list{display:grid;gap:8px;margin-top:12px;}
+.world-drama-row{display:flex;gap:9px;align-items:flex-start;padding:10px;border-radius:9px;background:rgba(229,9,20,.06);border:1px solid rgba(229,9,20,.12);}
+.world-drama-row>span{font-size:1rem;}
+.world-drama-row strong{font-size:.82rem;}
+.world-drama-row p{margin:3px 0 0;color:var(--text-muted);font-size:.72rem;line-height:1.35;}
+.year-world-news{margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:10px;}
+@media(max-width:700px){
+  .game-hud-compact{grid-template-columns:1fr auto;gap:6px;padding:8px 9px;}
+  .hud-menu{grid-column:1 / -1;grid-row:2;justify-content:space-between;overflow-x:auto;scrollbar-width:none;padding-bottom:1px;}
+  .hud-menu::-webkit-scrollbar{display:none;}
+  .hud-menu-btn{flex:0 0 auto;padding:6px 8px;font-size:.62rem;}
+  .hud-season{justify-self:end;}
+  .hud-numbers{grid-column:1 / -1;grid-row:3;}
+  .season-total-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+.channel-menu,.dashboard-primary-action{display:none!important;}

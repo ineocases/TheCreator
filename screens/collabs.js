@@ -53,9 +53,10 @@ export function renderCollabs(el) {
                         <div><span>Vistas</span><b>+${nf(offer.reward.vistas)}</b></div>
                         <div><span>Seguidores</span><b>+${nf(offer.reward.subs)}</b></div>
                         <div><span>Nicho</span><b>${offer.niche}</b></div>
+                        <div><span>Viaje</span><b>${Number(offer.costoVuelo || 0) ? `✈️ $${nf(offer.costoVuelo)}` : "🇦🇷 Sin vuelo"}</b></div>
                     </div>
                     <div class="contract-actions">
-                        <button id="acceptCollab" class="btn primary">CONTINUAR</button>
+                        <button id="acceptCollab" class="btn primary" ${Number(offer.costoVuelo || 0) > Number(gameState.player.dinero || 0) ? "disabled" : ""}>${Number(offer.costoVuelo || 0) > 0 ? `PAGAR VIAJE · $${nf(offer.costoVuelo)}` : "ACEPTAR COLAB"}</button>
                         <button id="rejectCollab" class="btn ghost">CERRAR</button>
                     </div>
                 </section>

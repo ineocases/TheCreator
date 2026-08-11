@@ -67,6 +67,16 @@ const creatorsIniciales = [
     C("xokas", "Xokas", "Variedad", 2200000, 91, 0.020),
     C("luisito", "Luisito Comunica", "Vlog", 42000000, 100, 0.012),
     C("mkbhd", "MKBHD", "Tecnología", 20000000, 100, 0.010),
+
+    // Más escena internacional: no participan en Coscu Army Awards.
+    C("elmariana", "ElMariana", "Gaming", 12000000, 97, 0.018),
+    C("rivers", "Rivers", "Variedad", 7000000, 95, 0.025),
+    C("westcol", "WestCOL", "Variedad", 9000000, 94, 0.032),
+    C("juan_guarnizo", "JuanSGuarnizo", "Variedad", 12000000, 96, 0.020),
+    C("bratty", "Bratty", "Música", 2200000, 82, 0.025),
+    C("missa", "MissaSinfonia", "Gaming", 5000000, 91, 0.022),
+    C("cellbit", "Cellbit", "Gaming", 7000000, 94, 0.020),
+    C("gamerz", "GamerZ", "Gaming", 850000, 70, 0.045),
     // Creadores ficticios de nueva camada: aparecen como parte del mundo y
     // pueden competir por Streamer Revelación en su temporada de debut.
     C("rookie_abril", "AbrilK", "Gaming", 4200, 58, 0.16, 2026),
@@ -90,7 +100,15 @@ const paisesNoArgentina = {
     illojuan: "España",
     xokas: "España",
     luisito: "México",
-    mkbhd: "Estados Unidos"
+    mkbhd: "Estados Unidos",
+    elmariana: "México",
+    rivers: "México",
+    westcol: "Colombia",
+    juan_guarnizo: "Colombia",
+    bratty: "México",
+    missa: "Brasil",
+    cellbit: "Brasil",
+    gamerz: "Chile"
 };
 
 creatorsIniciales.forEach(c => {
