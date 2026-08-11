@@ -596,3 +596,33 @@ body{
         width:100%;
     }
 }
+
+/* ============================================================
+   PASAN COSAS · CIERRE DE TRIMESTRE
+   ============================================================ */
+.compact-event-page { max-width: 900px; }
+.event-topline { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:18px 0 10px; }
+.event-quarter { color:var(--text-muted); font-size:.78rem; font-weight:800; }
+.event-main-card { padding:20px; border-top:2px solid var(--accent-red); }
+.event-icon { font-size:1.5rem; margin-bottom:4px; }
+.event-main-card .page-title { margin:4px 0 6px; }
+.event-main-card .page-subtitle { margin-bottom:16px; }
+.event-current-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.event-current-stats div { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); padding:9px 10px; border-radius:8px; }
+.event-current-stats span { display:block; color:var(--text-muted); font-size:.62rem; font-weight:800; }
+.event-current-stats b { display:block; margin-top:3px; font-size:1rem; }
+.compact-decision-grid { margin-top:12px; }
+.compact-decision-grid .decision-card { min-height:0; padding:15px; text-align:left; }
+.compact-decision-grid .decision-card h2 { margin:7px 0 5px; font-size:1rem; }
+.compact-decision-grid .decision-card p { margin:0; font-size:.78rem; line-height:1.4; }
+.decision-impact { display:block; margin-top:11px; color:var(--accent-green); font-size:.72rem; }
+.event-footnote { margin:10px 2px 0; color:var(--text-muted); font-size:.72rem; text-align:center; }
+@media(max-width:600px){
+  .event-topline { margin:10px 0 8px; }
+  .event-current-stats { grid-template-columns:repeat(2,1fr); }
+  .event-main-card { padding:15px; }
+  .compact-decision-grid { grid-template-columns:1fr 1fr; gap:8px; }
+  .compact-decision-grid .decision-card { padding:12px; }
+  .compact-decision-grid .decision-card h2 { font-size:.9rem; }
+  .event-footnote { font-size:.68rem; }
+}

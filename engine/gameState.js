@@ -221,46 +221,50 @@ export const gameState = {
         this.player.videoSubidoEsteTrimestre = true;
     },
 
-    // Los eventos son el principal sistema de decisiones del juego.
+    // Los eventos aparecen automáticamente al final del trimestre.
+    // La decisión NO es decorativa: modifica el resultado final del trimestre.
     generarEventoPendiente() {
         const p = this.player;
         if (!p || this.pendingEvent) return null;
 
-        // No todos los trimestres pasa algo. Pero sí lo suficiente para que
-        // la carrera no sea solamente "publicar > siguiente".
-        if (Math.random() > 0.42) return null;
+        // Queremos que el mundo esté vivo, pero no que haya un evento siempre.
+        if (Math.random() > 0.68) return null;
 
         const eventos = [
             {
                 id: "creator_share",
                 minSubs: 50,
                 title: "Un creador más grande compartió tu video",
-                text: "Un creador de tu nicho encontró tu contenido. Tenés que decidir qué hacer con la oportunidad.",
+                text: "Tu contenido apareció delante de una audiencia nueva. Tenés que decidir cómo aprovechar el momento.",
                 a: {
-                    label: "Responder y agradecer",
-                    desc: "+2 reputación",
-                    action: { reputacion: 2 }
+                    label: "Aprovechar el empujón",
+                    desc: "+12% vistas y +8% suscriptores del trimestre",
+                    action: { reputacion: 1 },
+                    cierre: { vistasPct: 0.12, subsPct: 0.08 }
                 },
                 b: {
-                    label: "Intentar aprovechar el contacto",
-                    desc: "+4 networking, -1 reputación",
-                    action: { networking: 4, reputacion: -1 }
+                    label: "Convertirlo en contenido",
+                    desc: "+6% vistas, +4% ingresos y +5% videos",
+                    action: { networking: 2 },
+                    cierre: { vistasPct: 0.06, dineroPct: 0.04, videosPct: 0.05 }
                 }
             },
             {
                 id: "trend",
                 minSubs: 50,
                 title: "Apareció una tendencia fuerte",
-                text: "La tendencia está creciendo. Podés adaptar tu contenido o mantener tu identidad.",
+                text: "El tema está explotando. Podés subirte a la ola o mantener tu identidad.",
                 a: {
                     label: "Subirme a la tendencia",
-                    desc: "+3 algoritmo, +1 creatividad",
-                    action: { algoritmo: 3, creatividad: 1 }
+                    desc: "+18% vistas y +10% suscriptores",
+                    action: { algoritmo: 2, creatividad: 1 },
+                    cierre: { vistasPct: 0.18, subsPct: 0.10 }
                 },
                 b: {
                     label: "Mantener mi estilo",
-                    desc: "+2 creatividad",
-                    action: { creatividad: 2 }
+                    desc: "+10% ingresos y +8% reputación del trimestre",
+                    action: { creatividad: 2, reputacion: 2 },
+                    cierre: { dineroPct: 0.10 }
                 }
             },
             {
@@ -270,13 +274,15 @@ export const gameState = {
                 text: "La audiencia creció y la calidad del contenido empieza a ser un problema.",
                 a: {
                     label: "Invertir $600",
-                    desc: "-$600, +4 edición",
-                    action: { dinero: -600, edicion: 4 }
+                    desc: "+15% vistas y +8% ingresos",
+                    action: { dinero: -600, edicion: 4 },
+                    cierre: { vistasPct: 0.15, dineroPct: 0.08 }
                 },
                 b: {
                     label: "Aguantar un poco más",
-                    desc: "+2 constancia",
-                    action: { constancia: 2 }
+                    desc: "+10% videos del trimestre",
+                    action: { constancia: 2 },
+                    cierre: { videosPct: 0.10 }
                 }
             },
             {
@@ -286,13 +292,15 @@ export const gameState = {
                 text: "Tus seguidores quieren que pruebes un formato que nunca hiciste.",
                 a: {
                     label: "Probarlo",
-                    desc: "+3 carisma, -1 reputación",
-                    action: { carisma: 3, reputacion: -1 }
+                    desc: "+15% suscriptores y +8% vistas",
+                    action: { carisma: 3 },
+                    cierre: { subsPct: 0.15, vistasPct: 0.08 }
                 },
                 b: {
                     label: "Mantener el plan",
-                    desc: "+2 constancia, +2 comunidad",
-                    action: { constancia: 2, comunidad: 2 }
+                    desc: "+12% ingresos y +5% videos",
+                    action: { constancia: 2, comunidad: 2 },
+                    cierre: { dineroPct: 0.12, videosPct: 0.05 }
                 }
             },
             {
@@ -302,13 +310,15 @@ export const gameState = {
                 text: "El tema está circulando. Podés responder y entrar en la conversación o dejar que se enfríe.",
                 a: {
                     label: "Responder públicamente",
-                    desc: "+4 fama, -3 reputación",
-                    action: { fama: 4, reputacion: -3 }
+                    desc: "+25% vistas, pero -5% reputación",
+                    action: { fama: 3, reputacion: -5 },
+                    cierre: { vistasPct: 0.25 }
                 },
                 b: {
                     label: "No alimentar la discusión",
-                    desc: "+3 reputación",
-                    action: { reputacion: 3 }
+                    desc: "+10% suscriptores y +8% ingresos",
+                    action: { reputacion: 3 },
+                    cierre: { subsPct: 0.10, dineroPct: 0.08 }
                 }
             }
         ];
@@ -322,11 +332,68 @@ export const gameState = {
         this.agregarNotificacion({
             tipo: "evento",
             titulo: `⚡ ${evento.title}`,
-            descripcion: "Hay una decisión esperando."
+            descripcion: "Hay una decisión esperando antes de cerrar el trimestre."
         });
 
         this.guardar();
         return this.pendingEvent;
+    },
+
+    aplicarImpactoCierreTrimestre(cierre = {}) {
+        const p = this.player;
+        const actividad = p.actividadTrimestre;
+        const resultado = this.lastQuarterResult;
+        if (!actividad || !resultado) return false;
+
+        const vistasBase = Number(actividad.vistas) || 0;
+        const subsBase = Number(actividad.suscriptores) || 0;
+        const dineroBase = Number(actividad.dinero) || 0;
+        const videosBase = Number(actividad.videos) || 0;
+
+        const videosPct = Number(cierre.videosPct) || 0;
+        // Si la decisión fue apostar por publicar más, el volumen extra
+        // arrastra también vistas, suscriptores e ingresos.
+        const vistasPct = (Number(cierre.vistasPct) || 0) + videosPct * 0.70;
+        const subsPct = (Number(cierre.subsPct) || 0) + videosPct * 0.55;
+        const dineroPct = (Number(cierre.dineroPct) || 0) + videosPct;
+
+        const bonusVistas = Math.max(0, Math.round(vistasBase * vistasPct));
+        const bonusSubs = Math.max(0, Math.round(subsBase * subsPct));
+        const bonusDinero = Math.max(0, Math.round(dineroBase * dineroPct));
+        const bonusVideos = Math.max(0, Math.round(videosBase * videosPct));
+
+        p.vistasTotales += bonusVistas;
+        p.suscriptores += bonusSubs;
+        p.dinero += bonusDinero;
+        p.ingresosTrimestre += bonusDinero;
+        p.ingresosGenerados = (Number(p.ingresosGenerados) || 0) + bonusDinero;
+        p.videosSubidos += bonusVideos;
+
+        if (!p.stats) p.stats = crearStats();
+        p.stats.videosPublicados = (Number(p.stats.videosPublicados) || 0) + bonusVideos;
+
+        actividad.vistas += bonusVistas;
+        actividad.suscriptores += bonusSubs;
+        actividad.dinero += bonusDinero;
+        actividad.videos += bonusVideos;
+        actividad.bonusCierre = {
+            vistas: bonusVistas,
+            suscriptores: bonusSubs,
+            dinero: bonusDinero,
+            videos: bonusVideos
+        };
+
+        resultado.totalVistas += bonusVistas;
+        resultado.totalSubs += bonusSubs;
+        resultado.totalDinero += bonusDinero;
+        resultado.totalVideos += bonusVideos;
+        resultado.bonusCierre = actividad.bonusCierre;
+        resultado.cierreAplicado = true;
+
+        if (this.time.trimestre === 1) p.historialTrimestre1 = actividad;
+        else p.historialTrimestre2 = actividad;
+
+        return actividad.bonusCierre;
     },
 
     resolverEvento(opcion) {
@@ -352,8 +419,13 @@ export const gameState = {
             }
         }
 
-        this.ultimoEventoResultado =
-            `${evento.title}: ${evento[opcion].label}. ${evento[opcion].desc}.`;
+        const cierre = this.aplicarImpactoCierreTrimestre(evento[opcion].cierre || {});
+        this.ultimoEventoResultado = {
+            titulo: evento.title,
+            opcion: evento[opcion].label,
+            descripcion: evento[opcion].desc,
+            cierre
+        };
 
         this.pendingEvent = null;
 
@@ -361,6 +433,9 @@ export const gameState = {
             p.stats.eventosGanados = (Number(p.stats.eventosGanados) || 0) + 1;
         }
 
+        // El sponsor se evalúa DESPUÉS de la decisión, para que el crecimiento
+        // conseguido con el evento también pueda desbloquear una marca.
+        this.generarOfertaSponsor();
         this.guardar();
         return true;
     },

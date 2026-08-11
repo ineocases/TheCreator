@@ -478,7 +478,7 @@ export function procesarPublicacionTrimestre(
 
     gameState.lastQuarterResult = quarterResult;
     gameState.generarEventoPendiente();
-    gameState.generarOfertaSponsor();
+    if (!gameState.pendingEvent) gameState.generarOfertaSponsor();
     gameState.guardar();
     return quarterResult;
 }

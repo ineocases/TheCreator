@@ -72,7 +72,13 @@ export function renderPublishVideo(el) {
             gameState.lastVideo = video;
             gameState.guardar();
 
-            window.location.hash = "#videoResult";
+            // Si pasó algo, aparece solo antes del cierre del trimestre.
+            // Si no, mostramos el resultado normal.
+            if (gameState.pendingEvent) {
+                window.location.hash = "#pasanCosas";
+            } else {
+                window.location.hash = "#videoResult";
+            }
         });
     });
 
