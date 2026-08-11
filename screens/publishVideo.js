@@ -68,7 +68,8 @@ export function renderPublishVideo(el) {
             const resultado = procesarPublicacionTrimestre(
                 video.titulo,
                 video.enfoquePrincipal,
-                video.enfoqueSecundario
+                video.enfoqueSecundario,
+                { tituloImpacto: video.tituloImpacto, tituloHook: video.tituloHook }
             );
 
             gameState.registrarVideoPublicado();

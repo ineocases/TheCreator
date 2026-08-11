@@ -39,10 +39,9 @@ export function renderPretemporada(el) {
         container.querySelectorAll(".select-card-button").forEach(btn => { btn.disabled = true; btn.style.opacity = ".5"; });
         gameState.mejorarAtributo(carta.attr, carta.pts);
         gameState.player.pretemporada = { año, entrenamiento:carta.titulo, atributo:carta.attr, puntos:carta.pts, efecto:carta.efecto };
-        gameState.agregarNotificacion({ tipo:"pretemporada", titulo:"⚡ Pretemporada completada", descripcion:`Elegiste "${carta.titulo}" y ganaste +${carta.pts} ${nombres[carta.attr]}.` });
         gameState.guardar();
-        container.innerHTML = `<div class="page-shell center" style="padding-top:15vh"><div class="panel"><div style="font-size:4rem">⚡</div><div class="eyebrow">AÑO ${año}</div><h1>Pretemporada lista.</h1><p class="muted">${carta.titulo}</p><strong style="color:var(--accent-green)">+${carta.pts} ${nombres[carta.attr]}</strong><p class="muted">Preparando tu primer trimestre...</p></div></div>`;
-        setTimeout(() => window.location.hash = "#dashboard", 650);
+        // La pretemporada no agrega una pantalla intermedia: volvemos directo al menú.
+        window.location.hash = "#dashboard";
     }));
     return container;
 }

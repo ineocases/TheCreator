@@ -36,7 +36,7 @@ const eventSystem = {
     commonEvent() {
         // Ejemplo: Clip viral en TikTok
         const fameBoost = utils.randomInt(1, 3);
-        gameState.player.fama += fameBoost;
+        gameState.player.fama = Math.min(100, Number(gameState.player.fama || 0) + fameBoost);
         
         return { 
             type: "common", 

@@ -64,6 +64,8 @@ function crearPlayer() {
         vistasTotales: 0,
         videosSubidos: 0,
         fama: 0,
+        debutYear: 2026,
+        revelacionGanada: false,
         comunidad: 50,
         reputacion: 50,
         ingresosTrimestre: 0,
@@ -151,6 +153,8 @@ export const gameState = {
         this.player.nombre = String(datos.nombre || "Creador").trim() || "Creador";
         this.player.canal = String(datos.canal || "Mi Canal").trim() || "Mi Canal";
         this.player.niche = datos.niche || "Gaming";
+        this.player.debutYear = 2026;
+        this.player.revelacionGanada = false;
 
         this.time = { año: 2026, trimestre: 1 };
         this.player.año = 2026;
@@ -992,6 +996,9 @@ export function normalizarGameState() {
     if (typeof p.vistasTotales !== "number") p.vistasTotales = 0;
     if (typeof p.videosSubidos !== "number") p.videosSubidos = 0;
     if (typeof p.fama !== "number") p.fama = 0;
+    p.fama = Math.max(0, Math.min(100, p.fama));
+    if (typeof p.debutYear !== "number") p.debutYear = 2026;
+    if (typeof p.revelacionGanada !== "boolean") p.revelacionGanada = false;
     if (typeof p.comunidad !== "number") p.comunidad = 50;
     if (typeof p.reputacion !== "number") p.reputacion = 50;
     if (typeof p.ingresosTrimestre !== "number") p.ingresosTrimestre = 0;

@@ -692,3 +692,89 @@ body{
 
 .publish-main-cta{width:100%;margin:12px 0 16px;min-height:54px;font-size:1rem;letter-spacing:.03em;}
 @media(max-width:600px){.publish-main-cta{min-height:50px;font-size:.9rem;margin:10px 0 12px}.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+/* ============================================================
+   DASHBOARD HEADER / MOBILE MENU
+   ============================================================ */
+.dashboard-top-clean {
+    align-items: center;
+    gap: 14px;
+}
+.channel-heading { min-width: 0; flex: 1; }
+.channel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.channel-title-row .page-title {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.channel-menu {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    max-width: 100%;
+}
+.channel-menu::-webkit-scrollbar { display:none; }
+.channel-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 9px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.035);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: .72rem;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.channel-menu-btn:hover {
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.dashboard-primary-action { flex: 0 0 auto; }
+.skill-row.skill-improved {
+    border-color: rgba(57,211,83,.42) !important;
+    background: rgba(57,211,83,.07) !important;
+}
+.skill-row.skill-improved strong { color: var(--accent-green) !important; }
+
+@media (max-width: 700px) {
+    .dashboard-top-clean {
+        display: block;
+    }
+    .channel-title-row {
+        gap: 7px;
+        align-items: center;
+    }
+    .channel-title-row .page-title {
+        flex: 0 1 auto;
+        max-width: 42%;
+        font-size: 1.28rem;
+    }
+    .channel-menu {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .channel-menu-btn {
+        padding: 6px 7px;
+        font-size: .66rem;
+    }
+    .dashboard-primary-action {
+        margin-top: 9px;
+    }
+    .dashboard-primary-action .btn {
+        width: 100%;
+    }
+}

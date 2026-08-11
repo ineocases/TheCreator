@@ -373,8 +373,7 @@ export function reaccionarACreador(
     gameState.player.suscriptores +=
         recompensa.subs;
 
-    gameState.player.fama +=
-        recompensa.fama;
+    gameState.player.fama = Math.min(100, Number(gameState.player.fama || 0) + Number(recompensa.fama || 0));
 
 
     // RELACI¨®N

@@ -22,6 +22,7 @@ function metricForCreator(c) {
         enojos: Number(m.enojos || 0),
         popularidad: Number(c.popularidad || 0),
         debutYear: Number.isInteger(c.debutYear) ? c.debutYear : null,
+        revelacionGanada: Boolean(c.revelacionGanada),
         isPlayer: false
     };
 }
@@ -43,7 +44,8 @@ function metricForPlayer(summary) {
         enojos: Number(awards.enojos || 0),
         popularidad: Number(summary?.famaFin || p.fama || 0),
         reputacion: Number(summary?.reputacion || p.reputacion || 50),
-        debutYear: Number(summary?.año) === 2026 ? 2026 : null,
+        debutYear: Number(p.debutYear) || Number(summary?.año) || 2026,
+        revelacionGanada: Boolean(p.revelacionGanada),
         isPlayer: true
     };
 }
@@ -93,32 +95,54 @@ function score(c, categoria) {
 }
 
 function nominados(candidatos, categoria) {
+    const añoPremio = Number(gameState.lastYearSummary?.año) || 2026;
     let pool = [...candidatos];
 
-    if (categoria === "revelacion") {
-        const añoPremio = Number(gameState.lastYearSummary?.año) || 2026;
-        pool = pool.filter(c => Number(c.debutYear) === añoPremio);
+    // Los premios no son un sorteo: una temporada de un canal muy chico no
+    // lo pone automáticamente contra los nombres grandes de la escena.
+    if (categoria === "streamer") {
+        pool = pool.filter(c => c.seguidores >= 100000 || c.popularidad >= 75 || (c.isPlayer && c.seguidores >= 100000));
     }
 
     if (categoria === "clip") {
-        pool = pool.filter(c => c.clips > 0 || c.virales > 0);
+        pool = pool.filter(c => c.clips > 0 && (c.vistas >= 100000 || c.seguidores >= 10000));
     }
 
     if (categoria === "enojo") {
-        pool = pool.filter(c => c.enojos > 0);
+        pool = pool.filter(c => c.enojos > 0 && (c.seguidores >= 15000 || c.popularidad >= 70));
+    }
+
+    if (categoria === "revelacion") {
+        pool = pool.filter(c => {
+            if (!Number.isInteger(c.debutYear)) return false;
+            const añosDesdeDebut = añoPremio - c.debutYear;
+            return añosDesdeDebut >= 0 && añosDesdeDebut < 5 && !c.revelacionGanada;
+        });
+        // La revelación tiene que haber demostrado que realmente está creciendo.
+        pool = pool.filter(c => c.crecimiento >= 300 || c.seguidores >= 1000 || c.virales >= 2);
     }
 
     pool.sort((a, b) => score(b, categoria) - score(a, categoria));
-
-    // El jugador puede entrar por mérito real. Para no regalar nominaciones,
-    // necesita superar un pequeño piso de rendimiento según la terna.
-    const jugador = candidatos.find(c => c.isPlayer);
     const top = pool.slice(0, 5);
+
+    // Un jugador chico no entra sólo porque el sistema necesita cinco nombres.
+    // Sólo se lo agrega si supera el umbral real de la categoría.
+    const jugador = candidatos.find(c => c.isPlayer);
     if (jugador && !top.some(c => c.isPlayer)) {
         const playerScore = score(jugador, categoria);
-        const minimo = categoria === "revelacion" ? 10 : 12;
-        if (playerScore >= minimo) {
-            top[top.length - 1] = jugador;
+        let elegible = false;
+        if (categoria === "streamer") elegible = jugador.seguidores >= 100000 && jugador.popularidad >= 25;
+        if (categoria === "clip") elegible = jugador.clips > 0 && (jugador.vistas >= 100000 || jugador.seguidores >= 10000);
+        if (categoria === "enojo") elegible = jugador.enojos > 0 && (jugador.seguidores >= 15000 || jugador.popularidad >= 20);
+        if (categoria === "revelacion") {
+            const añosDesdeDebut = añoPremio - jugador.debutYear;
+            elegible = !jugador.revelacionGanada && añosDesdeDebut >= 0 && añosDesdeDebut < 5 &&
+                (jugador.crecimiento >= 300 || jugador.seguidores >= 1000 || jugador.virales >= 2) && playerScore >= 20;
+        }
+        if (elegible) {
+            top.push(jugador);
+            top.sort((a, b) => score(b, categoria) - score(a, categoria));
+            top.splice(5);
         }
     }
 
@@ -157,6 +181,13 @@ export function renderAwards(el) {
     if (!resultados) {
         resultados = obtenerResultados(summary);
         gameState.player[key] = resultados;
+
+        const ganadorRevelacion = resultados.find(r => r.id === "revelacion")?.ganador;
+        if (ganadorRevelacion) {
+            const creadorGanador = gameState.creators.find(c => c.id === ganadorRevelacion.id);
+            if (creadorGanador) creadorGanador.revelacionGanada = true;
+            if (ganadorRevelacion.isPlayer) gameState.player.revelacionGanada = true;
+        }
 
         const ganados = resultados.filter(r => r.ganador?.isPlayer).length;
         if (ganados) {

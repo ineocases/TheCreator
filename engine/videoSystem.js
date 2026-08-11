@@ -36,46 +36,69 @@ function obtenerTipo(index) {
     return "caro";
 }
 
-function generarTitulo(formato, tema) {
-    const plantillas = {
-        Gameplay: [
-            `Jugando ${tema} por primera vez`,
-            `NO esperaba esto en ${tema}`,
-            `La partida más rara de ${tema}`
-        ],
-        "Gameplay premium": [
-            `Jugando ${tema} con todo al máximo`,
-            `Probé ${tema} y pasó esto`,
-            `¿Vale la pena ${tema}?`
-        ],
-        "Reaccionando a": [
-            `Reaccionando a lo mejor de ${tema}`,
-            `NO PUEDO CREER lo que pasó con ${tema}`,
-            `Mi reacción a ${tema}`
-        ],
-        Challenge: [
-            `El desafío más difícil de ${tema}`,
-            `Intenté hacer esto en ${tema}`,
-            `¿Puedo superar este desafío de ${tema}?`
-        ],
-        "24 Horas con": [
-            `24 HORAS con ${tema}`,
-            `Pasé 24 horas haciendo esto: ${tema}`,
-            `24 HORAS que cambiaron todo`
-        ],
-        "Viajando a": [
-            `Viajando para conocer ${tema}`,
-            `Mi viaje para descubrir ${tema}`,
-            `NO esperaba encontrar esto en ${tema}`
-        ],
-        "Documental sobre": [
-            `La historia detrás de ${tema}`,
-            `La verdad sobre ${tema}`,
-            `¿Qué pasó realmente con ${tema}?`
-        ]
-    };
+function analizarTema(tema, niche) {
+    const t = String(tema || "").toLowerCase();
+    const personasGigantes = ["messi", "cristiano ronaldo", "ibai", "coscu", "spreen", "davoo", "la cobra"];
+    const personas = ["messi", "cristiano ronaldo", "coscu", "spreen", "davoo", "la cobra", "ibai"];
+    const juegosMuyBuscados = ["gta vi", "fortnite", "minecraft", "roblox", "valorant", "ea sports fc"];
 
-    const opciones = plantillas[formato.name] || [`${formato.name}: ${tema}`];
+    if (personasGigantes.some(x => t.includes(x))) {
+        return { impacto: 1.55, tipo: "persona", entidad: tema, hook: "PERSONA_GRANDE" };
+    }
+    if (personas.some(x => t.includes(x))) {
+        return { impacto: 1.30, tipo: "persona", entidad: tema, hook: "PERSONA" };
+    }
+    if (juegosMuyBuscados.some(x => t.includes(x))) {
+        return { impacto: 1.14, tipo: "juego", entidad: tema, hook: "JUEGO_TENDENCIA" };
+    }
+    if (["mercado de pases", "libertadores", "mundial", "balón de oro", "selección argentina"].some(x => t.includes(x))) {
+        return { impacto: 1.18, tipo: "actualidad", entidad: tema, hook: "ACTUALIDAD" };
+    }
+    return { impacto: 1.0, tipo: "tema", entidad: tema, hook: "NORMAL" };
+}
+
+function generarTitulo(formato, tema) {
+    const analisis = analizarTema(tema);
+    const t = String(tema || "");
+
+    // Las personas/acontecimientos excepcionales cambian el título porque
+    // representan una historia que realmente merece ser clickeada.
+    if (analisis.hook === "PERSONA_GRANDE") {
+        const persona = analisis.entidad;
+        if (formato.name === "Viajando a" || formato.name === "24 Horas con") return `UN DÍA CON ${persona.toUpperCase()} 😳`;
+        if (formato.name === "Reaccionando a") return `REACCIONANDO A MI ENCUENTRO CON ${persona.toUpperCase()}`;
+        if (formato.name === "Documental sobre") return `LA HISTORIA DETRÁS DE MI ENCUENTRO CON ${persona.toUpperCase()}`;
+        return `CONOCÍ A ${persona.toUpperCase()} Y PASÓ ESTO...`;
+    }
+
+    if (analisis.hook === "PERSONA") {
+        if (formato.name === "Reaccionando a") return `REACCIONANDO A ${t.toUpperCase()}`;
+        return `ME ENCONTRÉ CON ${t.toUpperCase()} Y NO LO ESPERABA`;
+    }
+
+    if (analisis.hook === "JUEGO_TENDENCIA") {
+        const opciones = [
+            `ME PASÉ ${t.toUpperCase()} Y NO ERA COMO ESPERABA`,
+            `EL MOMENTO MÁS RARO QUE TUVE EN ${t.toUpperCase()}`,
+            `NO PODÍA CREER LO QUE PASÓ EN ${t.toUpperCase()}`
+        ];
+        return opciones[random(0, opciones.length - 1)];
+    }
+
+    if (analisis.hook === "ACTUALIDAD") {
+        return `${t.toUpperCase()}: TODO LO QUE ESTÁ PASANDO`;
+    }
+
+    const plantillas = {
+        Gameplay: [`Jugando ${t} por primera vez`, `NO esperaba esto en ${t}`, `La partida más rara de ${t}`],
+        "Gameplay premium": [`Jugando ${t} con todo al máximo`, `Probé ${t} y pasó esto`, `¿Vale la pena ${t}?`],
+        "Reaccionando a": [`Reaccionando a lo mejor de ${t}`, `NO PUEDO CREER lo que pasó con ${t}`, `Mi reacción a ${t}`],
+        Challenge: [`El desafío más difícil de ${t}`, `Intenté hacer esto en ${t}`, `¿Puedo superar este desafío de ${t}?`],
+        "24 Horas con": [`24 HORAS con ${t}`, `Pasé 24 horas haciendo esto: ${t}`, `24 HORAS que cambiaron todo`],
+        "Viajando a": [`Viajando para conocer ${t}`, `Mi viaje para descubrir ${t}`, `NO esperaba encontrar esto en ${t}`],
+        "Documental sobre": [`La historia detrás de ${t}`, `La verdad sobre ${t}`, `¿Qué pasó realmente con ${t}?`]
+    };
+    const opciones = plantillas[formato.name] || [`${formato.name}: ${t}`];
     return opciones[random(0, opciones.length - 1)];
 }
 
@@ -117,11 +140,16 @@ export function generarVideos(player) {
         const enfoquePrincipal = atributoPrincipal(formato.name, tema);
         const enfoqueSecundario = enfoquePrincipal === "carisma" ? "humor" : "creatividad";
 
+        const titulo = generarTitulo(formato, tema);
+        const contexto = analizarTema(tema, player.niche);
+
         catalogo.push({
             id: typeof crypto !== "undefined" && crypto.randomUUID
                 ? crypto.randomUUID()
                 : `video_${Date.now()}_${catalogo.length}`,
-            titulo: generarTitulo(formato, tema),
+            titulo,
+            tituloImpacto: contexto.impacto,
+            tituloHook: contexto.hook,
             formato: formato.name,
             tema,
             costo: Number(formato.cost) || 0,
@@ -139,9 +167,13 @@ export function generarVideos(player) {
         const formato = formatosSeguros[0];
         const enfoquePrincipal = atributoPrincipal(formato.name, tema);
         const enfoqueSecundario = enfoquePrincipal === "carisma" ? "humor" : "creatividad";
+        const titulo = generarTitulo(formato, tema);
+        const contexto = analizarTema(tema, player.niche);
         catalogo.push({
             id: `video_${Date.now()}_${catalogo.length}_${Math.random().toString(36).slice(2,7)}`,
-            titulo: generarTitulo(formato, tema),
+            titulo,
+            tituloImpacto: contexto.impacto,
+            tituloHook: contexto.hook,
             formato: formato.name,
             tema,
             costo: Number(formato.cost) || 0,
@@ -280,7 +312,7 @@ function calcularIngresosPorVideo(vistas, player) {
     return Math.max(0.05, ingreso);
 }
 
-function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
+function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario, contexto = {}) {
     const p = gameState.player;
     const a = p.atributos || {};
 
@@ -294,6 +326,11 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
         0.9 + clamp(potencia / 150, 0, 0.8)
     );
 
+    // El título importa: una idea coherente y excepcional puede multiplicar
+    // el interés. "Conocí a Messi" no vale lo mismo que un gameplay genérico.
+    const tituloImpacto = clamp(Number(contexto.tituloImpacto) || 1, 0.85, 1.70);
+    vistas *= tituloImpacto;
+
     const creatividad = Number(a.creatividad) || 0;
     const algoritmo = Number(a.algoritmo) || 0;
     const carisma = Number(a.carisma) || 0;
@@ -304,7 +341,10 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
         algoritmo * 0.025 +
         carisma * 0.012;
 
-    probViral = clamp(probViral, 0.5, 7.5);
+    // Un concepto excepcional y bien titulado tiene más posibilidades de
+    // despegar que un video genérico.
+    probViral *= 1 + Math.max(0, tituloImpacto - 1) * 0.75;
+    probViral = clamp(probViral, 0.5, 12);
 
     const viral = Math.random() * 100 < probViral;
     let nivelViralidad = "normal";
@@ -377,12 +417,14 @@ function aplicarResultado(resultado, contarVideo = true) {
 export function procesarPublicacionVideo(
     titulo,
     enfoquePrincipal,
-    enfoqueSecundario
+    enfoqueSecundario,
+    contexto = {}
 ) {
     const resultado = resultadoVideoManual(
         titulo,
         enfoquePrincipal || "creatividad",
-        enfoqueSecundario || "carisma"
+        enfoqueSecundario || "carisma",
+        contexto
     );
 
     aplicarResultado(resultado, true);
@@ -450,12 +492,14 @@ function simularVideoSecundario() {
 export function procesarPublicacionTrimestre(
     titulo,
     enfoquePrincipal,
-    enfoqueSecundario
+    enfoqueSecundario,
+    contexto = {}
 ) {
     const manualResult = procesarPublicacionVideo(
         titulo,
         enfoquePrincipal || "creatividad",
-        enfoqueSecundario || "carisma"
+        enfoqueSecundario || "carisma",
+        contexto
     );
 
     const constancia = Number(gameState.player.atributos?.constancia) || 0;
