@@ -244,3 +244,73 @@ button,input,select{font:inherit}button{cursor:pointer}a{color:inherit}
     .year-cover h1 { font-size:1.55rem !important; }
     .year-cover p { font-size:.72rem !important; line-height:1.35; }
 }
+
+
+/* ============================================================
+   EL CREADOR — CLEAN MOBILE UI v3
+   Inspirado en la densidad y limpieza de una interfaz de juego móvil.
+   ============================================================ */
+:root{
+    --ui-bg:#090a0c;
+    --ui-panel:#111316;
+    --ui-panel-2:#15181c;
+    --ui-line:rgba(255,255,255,.09);
+    --ui-muted:#8d939d;
+    --ui-red:#ff1020;
+}
+
+body{background:var(--ui-bg);}
+.page-shell{width:min(100% - 28px,980px);padding:12px 0 34px;}
+.panel,.stat-tile,.result-hero,.sponsor-alert,.year-cover{
+    box-shadow:none !important;
+}
+.panel{background:var(--ui-panel);border:1px solid var(--ui-line);border-radius:12px;padding:16px;}
+.page-title{font-size:clamp(1.7rem,5vw,2.6rem);letter-spacing:-.03em;}
+.page-subtitle{color:#9a9fa7;font-size:.88rem;line-height:1.4;}
+.eyebrow,.result-kicker{font-size:.62rem;letter-spacing:.13em;font-weight:900;color:var(--ui-red);}
+.stat-grid,.stat-grid.four{gap:8px;margin:12px 0;}
+.stat-tile{background:var(--ui-panel-2);border-radius:10px;padding:12px;}
+.stat-tile span{font-size:.62rem;}
+.stat-tile strong{font-size:1.2rem;margin-top:4px;}
+.stat-tile small{font-size:.64rem;}
+.result-hero{padding:15px;border-radius:12px;margin:12px 0;background:linear-gradient(110deg,rgba(255,16,32,.11),rgba(255,255,255,.025));}
+.result-number{font-size:3rem;min-width:70px;}
+.featured-video,.quarter-story{margin-top:10px;}
+.featured-video h2,.quarter-story h2{font-size:1.05rem;letter-spacing:-.015em;}
+.mini-stats{font-size:.72rem;gap:9px;}
+.sponsor-alert{padding:12px;margin-top:10px;border-radius:11px;}
+.sponsor-alert h2{font-size:1rem;}
+.sponsor-alert p{font-size:.72rem;line-height:1.35;}
+.continue-row.single-next{margin-top:12px;}
+.next-button,.btn.big{min-height:44px;border-radius:10px;font-size:.78rem;box-shadow:none;}
+.year-summary-page .year-cover{padding:14px;margin:10px 0;background:transparent;border:0;border-bottom:1px solid var(--ui-line);border-radius:0;}
+.year-summary-page .year-cover h1{font-size:clamp(1.55rem,6vw,2.4rem);margin:5px 0 4px;letter-spacing:-.04em;}
+.year-summary-page .year-cover p{font-size:.75rem;margin:0;color:var(--ui-muted);}
+.growth-line{font-size:1.45rem;display:flex;align-items:center;gap:8px;}
+.progress{height:5px;border-radius:10px;background:#25282d;overflow:hidden;margin:10px 0;}
+.quarter-grid{gap:8px;}
+.quarter-grid .panel{padding:13px;}
+.quarter-grid .panel h2{font-size:1.05rem;margin:7px 0;}
+.quarter-grid .panel p{font-size:.72rem;margin:4px 0;}
+.highlight-panel{margin-top:8px;}
+.highlight-panel h2{font-size:1rem;}
+.highlight-panel p{font-size:.72rem;line-height:1.4;color:var(--ui-muted);}
+
+@media(max-width:600px){
+    .page-shell{width:calc(100% - 16px);padding:6px 0 22px;}
+    .game-hud-compact{border-radius:10px;margin-bottom:8px;}
+    .game-hud-compact .hud-channel strong{font-size:.82rem;}
+    .game-hud-compact .hud-channel span{font-size:.58rem;}
+    .game-hud-compact .hud-season b{font-size:.68rem;}
+    .game-hud-compact .hud-numbers{gap:8px;}
+    .game-hud-compact .hud-numbers small{font-size:.5rem;}
+    .game-hud-compact .hud-numbers b{font-size:.68rem;}
+    .result-page .page-title{font-size:1.55rem;margin:7px 0 3px;}
+    .result-page .page-subtitle{font-size:.7rem;}
+    .result-hero{display:flex;flex-direction:row;align-items:center;}
+    .result-number{font-size:2.5rem;min-width:60px;}
+    .result-hero h2{font-size:.9rem;}
+    .result-hero p{font-size:.64rem;}
+    .stat-grid,.stat-grid.four{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .continue-row.single-next>*{width:100%;}
+}

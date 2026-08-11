@@ -16,6 +16,7 @@ export function renderYearSummary(el) {
     }
 
     const crecimiento = s.suscriptoresInicio > 0 ? (s.crecimientoSubs / s.suscriptoresInicio) * 100 : 0;
+    const ingresosGenerados = Number(s.ingresosGenerados ?? p.ingresosGenerados ?? 0);
     const t1 = s.trimestre1;
     const t2 = s.trimestre2;
 
@@ -24,15 +25,15 @@ export function renderYearSummary(el) {
             ${renderHeaderHud()}
             <div class="year-cover">
                 <div class="eyebrow">TEMPORADA ${s.año}</div>
-                <h1>Tu primer año como creador.</h1>
-                <p>Dos trimestres. Decisiones. Videos. Oportunidades. Este fue el año que construiste.</p>
+                <h1>Así fue tu temporada.</h1>
+                <p>Dos trimestres. Un año de carrera. Esto es lo que dejaste.</p>
             </div>
 
             <div class="stat-grid four">
                 <div class="stat-tile"><span>👥 Suscriptores</span><strong>${nf(s.suscriptoresFin)}</strong><small>+${nf(s.crecimientoSubs)} este año</small></div>
                 <div class="stat-tile"><span>👁️ Vistas</span><strong>${nf(s.vistasGanadas)}</strong><small>vistas ganadas</small></div>
                 <div class="stat-tile"><span>🎬 Videos</span><strong>${nf(s.videosPublicados)}</strong><small>publicados</small></div>
-                <div class="stat-tile"><span>💰 Dinero</span><strong>$${nf(s.dineroGanado)}</strong><small>generado</small></div>
+                <div class="stat-tile"><span>💰 Dinero</span><strong>$${nf(ingresosGenerados)}</strong><small>ingresos generados</small></div>
             </div>
 
             <div class="panel">

@@ -63,6 +63,7 @@ function crearPlayer() {
         comunidad: 50,
         reputacion: 50,
         ingresosTrimestre: 0,
+        ingresosGenerados: 0,
 
         atributos: crearAtributos(),
 
@@ -104,6 +105,7 @@ function snapshotAño(player) {
         vistasTotales: Number(player.vistasTotales) || 0,
         videosSubidos: Number(player.videosSubidos) || 0,
         dinero: Number(player.dinero) || 0,
+        ingresosGenerados: Number(player.ingresosGenerados) || 0,
         fama: Number(player.fama) || 0,
         reputacion: Number(player.reputacion) || 50
     };
@@ -597,6 +599,7 @@ export const gameState = {
             dineroInicio: inicio.dinero,
             dineroFin: fin.dinero,
             dineroGanado: fin.dinero - inicio.dinero,
+            ingresosGenerados: (Number(fin.ingresosGenerados) || 0) - (Number(inicio.ingresosGenerados) || 0),
 
             famaInicio: inicio.fama,
             famaFin: fin.fama,
@@ -669,6 +672,7 @@ export function normalizarGameState() {
     if (typeof p.comunidad !== "number") p.comunidad = 50;
     if (typeof p.reputacion !== "number") p.reputacion = 50;
     if (typeof p.ingresosTrimestre !== "number") p.ingresosTrimestre = 0;
+    if (typeof p.ingresosGenerados !== "number") p.ingresosGenerados = 0;
     if (typeof p.videoSubidoEsteTrimestre !== "boolean") p.videoSubidoEsteTrimestre = false;
     if (typeof p.partidaIniciada !== "boolean") p.partidaIniciada = false;
 
