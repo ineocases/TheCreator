@@ -7,6 +7,7 @@ const nf = n => Number(n || 0).toLocaleString();
 export function renderDashboard(el) {
     const container = el || document.getElementById("dashboardScreen");
     if (!container) return;
+
     const p = gameState.player;
 
     if (!p.partidaIniciada) {
@@ -17,14 +18,26 @@ export function renderDashboard(el) {
     const hizoPretemporada = !!p.pretemporada;
     const actividad = p.actividadTrimestre;
     const sponsor = gameState.pendingSponsorOffer;
-    const notif = gameState.notifications?.find(n => !n.leida);
     const pendingEvent = gameState.pendingEvent;
+    const notif = gameState.notifications?.find(n => !n.leida);
 
-    const acciones = !hizoPretemporada
-        ? `<a class="btn primary big" href="#pretemporada">⚡ HACER PRETEMPORADA</a>`
-        : p.videoSubidoEsteTrimestre
-            ? `<a class="btn primary big" href="#videoResult">📊 VER RESULTADO</a>`
-            : `<a class="btn primary big" href="#publish">📹 ELEGIR VIDEO</a>`;
+    let accionPrincipal;
+
+    if (!hizoPretemporada) {
+        accionPrincipal =
+            `<a class="btn primary big pulse" href="#pretemporada">⚡ HACER PRETEMPORADA</a>`;
+    } else if (pendingEvent) {
+        accionPrincipal =
+            `<a class="btn primary big pulse" href="#pasanCosas">⚡ PASÓ ALGO</a>`;
+    } else if (p.videoSubidoEsteTrimestre) {
+        accionPrincipal =
+            `<a class="btn primary big" href="#videoResult">📊 VER RESULTADO</a>`;
+    } else {
+        accionPrincipal =
+            `<a class="btn primary big" href="#publish">📹 ELEGIR VIDEO</a>`;
+    }
+
+    const progresoAño = p.trimestre === 1 ? 50 : 100;
 
     container.innerHTML = `
         <div class="page-shell dashboard-page">
@@ -32,34 +45,70 @@ export function renderDashboard(el) {
 
             <div class="dashboard-top">
                 <div>
-                    <div class="eyebrow">AÑO ${p.año} · TRIMESTRE ${p.trimestre}/2</div>
+                    <div class="eyebrow">CARRERA · ${p.año} · TRIMESTRE ${p.trimestre}/2</div>
                     <h1 class="page-title">${p.canal}</h1>
                     <p class="page-subtitle">${p.nombre} · ${p.niche}</p>
                 </div>
-                ${acciones}
+                ${accionPrincipal}
+            </div>
+
+            <div class="season-progress panel">
+                <div class="season-progress-head">
+                    <div>
+                        <div class="eyebrow">TEMPORADA ${p.año}</div>
+                        <strong>${p.trimestre === 1 ? "Primera mitad del año" : "Último trimestre del año"}</strong>
+                    </div>
+                    <span>${progresoAño}%</span>
+                </div>
+                <div class="season-track">
+                    <i style="width:${progresoAño}%"></i>
+                    <b class="season-dot dot-1">1</b>
+                    <b class="season-dot dot-2">2</b>
+                </div>
+                <small>
+                    Cada trimestre tu canal publica entre 30 y 150 videos propios.
+                    Vos elegís el video destacado.
+                </small>
             </div>
 
             ${!hizoPretemporada ? `
                 <div class="callout danger">
                     <div class="callout-icon">⚡</div>
-                    <div><b>Tu carrera todavía no empezó.</b><span>Elegí una mejora y después vas a poder publicar tu primer video.</span></div>
+                    <div>
+                        <b>Tu carrera todavía no empezó.</b>
+                        <span>Elegí una mejora para arrancar el año.</span>
+                    </div>
                 </div>
             ` : ""}
 
             ${pendingEvent ? `
-                <div class="callout event-callout"><div class="callout-icon">⚡</div><div><b>${pendingEvent.title}</b><span>Hay una decisión que puede cambiar tu trimestre.</span></div><a class="btn primary" href="#pasanCosas">VER DECISIÓN</a></div>
-            ` : ""}
-
-            ${sponsor ? `
-                <div class="callout sponsor-callout">
-                    <div class="callout-icon">📩</div>
-                    <div><b>${sponsor.name} quiere trabajar con vos.</b><span>Recibiste una oferta porque tu canal alcanzó un nuevo nivel.</span></div>
-                    <a class="btn gold" href="#sponsors">VER OFERTA</a>
+                <div class="callout event-callout dramatic-callout">
+                    <div class="callout-icon">⚡</div>
+                    <div>
+                        <b>${pendingEvent.title}</b>
+                        <span>${pendingEvent.text}</span>
+                    </div>
+                    <a class="btn primary" href="#pasanCosas">TOMAR DECISIÓN</a>
                 </div>
             ` : ""}
 
-            ${notif && !sponsor ? `
-                <div class="notice-line"><span>●</span><b>${notif.titulo}</b><span>${notif.descripcion}</span></div>
+            ${sponsor ? `
+                <div class="callout sponsor-callout dramatic-callout">
+                    <div class="callout-icon">💼</div>
+                    <div>
+                        <b>${sponsor.name} quiere trabajar con vos.</b>
+                        <span>La propuesta apareció sola. Ya no necesitás buscar sponsors.</span>
+                    </div>
+                    <a class="btn gold" href="#sponsors">ABRIR PROPUESTA</a>
+                </div>
+            ` : ""}
+
+            ${notif && !pendingEvent && !sponsor ? `
+                <div class="notice-line">
+                    <span>●</span>
+                    <b>${notif.titulo}</b>
+                    <span>${notif.descripcion}</span>
+                </div>
             ` : ""}
 
             <div class="stat-grid four">
@@ -74,45 +123,85 @@ export function renderDashboard(el) {
                     <div class="eyebrow">📈 ESTADO DEL CANAL</div>
                     <div class="skill-list">
                         ${[
-                            ["✂️ Edición", "edicion"], ["😎 Carisma", "carisma"],
-                            ["🤖 Algoritmo", "algoritmo"], ["📈 Marketing", "marketing"],
-                            ["🔥 Constancia", "constancia"], ["😂 Humor", "humor"],
-                            ["💡 Creatividad", "creatividad"], ["🤝 Networking", "networking"]
+                            ["✂️ Edición", "edicion"],
+                            ["😎 Carisma", "carisma"],
+                            ["🤖 Algoritmo", "algoritmo"],
+                            ["📈 Marketing", "marketing"],
+                            ["🔥 Constancia", "constancia"],
+                            ["😂 Humor", "humor"],
+                            ["💡 Creatividad", "creatividad"],
+                            ["🤝 Networking", "networking"]
                         ].map(([label,key]) => `
-                            <div class="skill-row"><span>${label}</span><strong>${p.atributos[key] || 0}</strong></div>
+                            <div class="skill-row">
+                                <span>${label}</span>
+                                <strong>${p.atributos?.[key] || 0}</strong>
+                            </div>
                         `).join("")}
                     </div>
                 </section>
 
                 <section class="panel">
-                    <div class="eyebrow">🧠 LO QUE IMPORTA</div>
-                    <div class="big-metric"><strong>${nf(p.fama)}</strong><span>Fama</span></div>
-                    <div class="metric-line"><span>Comunidad</span><b>${nf(p.comunidad)}/100</b></div>
+                    <div class="eyebrow">🧠 REPUTACIÓN</div>
+                    <div class="big-metric">
+                        <strong>${nf(p.fama)}</strong>
+                        <span>Fama</span>
+                    </div>
+
+                    <div class="metric-line">
+                        <span>Comunidad</span>
+                        <b>${nf(p.comunidad)}/100</b>
+                    </div>
                     <div class="progress"><i style="width:${Math.min(100,p.comunidad || 0)}%"></i></div>
-                    <div class="metric-line"><span>Reputación</span><b>${nf(p.reputacion)}/100</b></div>
+
+                    <div class="metric-line">
+                        <span>Reputación</span>
+                        <b>${nf(p.reputacion)}/100</b>
+                    </div>
                     <div class="progress"><i style="width:${Math.min(100,p.reputacion || 0)}%"></i></div>
                 </section>
             </div>
 
             ${actividad ? `
-                <section class="panel activity-panel">
-                    <div><div class="eyebrow">ÚLTIMA ACTIVIDAD</div><h2>Tu canal estuvo activo.</h2></div>
-                    <div class="activity-chips">
-                        <span>🎬 ${nf(actividad.videos)} videos</span>
-                        <span>👁️ ${nf(actividad.vistas)} vistas</span>
-                        <span>👥 +${nf(actividad.suscriptores)} subs</span>
+                <section class="panel activity-panel result-mini-panel">
+                    <div>
+                        <div class="eyebrow">ÚLTIMO TRIMESTRE</div>
+                        <h2>${nf(actividad.videos)} publicaciones</h2>
+                        <p class="muted">
+                            ${nf(actividad.vistas)} vistas · +${nf(actividad.suscriptores)} subs · $${nf(actividad.dinero)}
+                        </p>
                     </div>
+                    <a class="btn ghost" href="#videoResult">VER DETALLE</a>
                 </section>
             ` : ""}
 
             <div class="quick-actions">
-                <a href="#collabs" class="action-card"><b>🤝 Colaboraciones</b><span>Construí relaciones.</span></a>
-                <a href="#store" class="action-card"><b>🛒 Tienda</b><span>Mejorá tu equipo.</span></a>
-                <a href="#awards" class="action-card"><b>🏆 Premios</b><span>Tu reconocimiento.</span></a>
-                <a href="#sponsors" class="action-card"><b>💼 Contratos</b><span>Solo cuando haya oportunidades.</span></a>
+                <a href="#collabs" class="action-card"><b>🤝 Colaboraciones</b><span>Construí relaciones con otros creadores.</span></a>
+                <a href="#store" class="action-card"><b>🛒 Equipo</b><span>Invertí cuando tu canal pueda aprovecharlo.</span></a>
+                <a href="#awards" class="action-card"><b>🏆 Awards</b><span>Reconocimiento al final de la temporada.</span></a>
+                <a href="#sponsors" class="action-card"><b>💼 Contratos</b><span>Solo aparecen cuando una marca te busca.</span></a>
             </div>
+
+            <section class="danger-zone panel">
+                <div>
+                    <div class="eyebrow">⚙️ CARRERA</div>
+                    <h3>¿Querés empezar de cero?</h3>
+                    <p class="muted">Borra la partida actual y vuelve a la pantalla de creación.</p>
+                </div>
+                <button id="deleteCareer" class="btn danger-btn">🗑️ BORRAR CARRERA</button>
+            </section>
         </div>
     `;
+
+    container.querySelector("#deleteCareer")?.addEventListener("click", () => {
+        const ok = window.confirm(
+            "¿Seguro que querés borrar esta carrera? Se perderá todo el progreso."
+        );
+
+        if (!ok) return;
+
+        gameState.resetPlayer();
+    });
+
     return container;
 }
 

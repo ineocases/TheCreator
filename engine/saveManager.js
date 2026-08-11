@@ -25,6 +25,7 @@ const saveManager = {
                 pendingSponsorOffer: gameState.pendingSponsorOffer,
                 pendingEvent: gameState.pendingEvent,
                 lastYearSummary: gameState.lastYearSummary,
+                lastQuarterResult: gameState.lastQuarterResult,
                 lastVideo: gameState.lastVideo,
                 lastVideoResult: gameState.lastVideoResult,
                 ultimoEventoResultado: gameState.ultimoEventoResultado,

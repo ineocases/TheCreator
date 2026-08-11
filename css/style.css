@@ -22,3 +22,50 @@ button,input,select{font:inherit}button{cursor:pointer}a{color:inherit}
 @media(max-width:520px){.page-shell{width:min(100% - 20px,1120px)}.stat-grid,.stat-grid.four,.quick-actions{grid-template-columns:1fr}.skill-list{grid-template-columns:1fr}.dashboard-top{align-items:flex-start}.dashboard-top .btn{width:100%}.continue-row>*{width:100%}}
 .cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.preseason-card h2{margin:16px 0 9px}.preseason-card p{line-height:1.55}.card-bonus{letter-spacing:.03em}
 @media(max-width:800px){.cards-grid{grid-template-columns:1fr}}
+
+/* =========================================================
+   POLISH / GAME FEEL
+   ========================================================= */
+
+.pulse{animation:buttonPulse 2.4s ease-in-out infinite}
+.btn.danger-btn{background:rgba(229,9,20,.1);border:1px solid rgba(229,9,20,.45);color:#ff6b73}
+.btn.danger-btn:hover{background:var(--accent-red);color:#fff}
+.danger-zone{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:28px;background:rgba(229,9,20,.025);border-color:rgba(229,9,20,.18)}
+.danger-zone h3{margin:6px 0 3px}
+.danger-zone p{margin:0}
+
+.season-progress{padding:18px 20px;margin-top:18px}
+.season-progress-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
+.season-progress-head>span{font-size:1.25rem;font-weight:900;color:var(--accent-red)}
+.season-progress small{display:block;color:var(--text-muted);margin-top:13px}
+.season-track{position:relative;height:9px;background:rgba(255,255,255,.07);border-radius:99px;margin:15px 5px 0;overflow:visible}
+.season-track>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-red),var(--accent-yellow));border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.season-dot{position:absolute;top:50%;width:24px;height:24px;display:grid;place-items:center;transform:translate(-50%,-50%);border-radius:50%;background:#191919;border:2px solid rgba(255,255,255,.25);font-size:.7rem}
+.season-dot.dot-1{left:0}
+.season-dot.dot-2{left:100%}
+.dramatic-callout{animation:noticeIn .45s cubic-bezier(.2,.8,.2,1) both}
+.event-alert{background:rgba(229,9,20,.08);border-color:rgba(229,9,20,.35)}
+.result-kicker{margin-top:18px;color:var(--accent-red);font-size:.75rem;font-weight:900;letter-spacing:.13em}
+.result-stat strong{font-variant-numeric:tabular-nums}
+.quarter-story h2{font-family:var(--font-heading);margin:6px 0}
+.quarter-story p{color:var(--text-muted);max-width:760px}
+.reveal-card{animation:revealCard .55s cubic-bezier(.2,.8,.2,1) both}
+.result-mini-panel{animation:fade .35s ease both}
+
+@keyframes buttonPulse{
+    0%,100%{box-shadow:0 0 0 rgba(229,9,20,0)}
+    50%{box-shadow:0 0 0 7px rgba(229,9,20,.08)}
+}
+@keyframes noticeIn{
+    from{opacity:0;transform:translateY(-8px) scale(.99)}
+    to{opacity:1;transform:none}
+}
+@keyframes revealCard{
+    from{opacity:0;transform:translateY(14px) scale(.985)}
+    to{opacity:1;transform:none}
+}
+
+@media(max-width:620px){
+    .danger-zone{align-items:flex-start;flex-direction:column}
+    .danger-zone .btn{width:100%}
+}

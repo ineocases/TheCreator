@@ -41,7 +41,7 @@ export function renderPublishVideo(el) {
             <div style="margin:25px 0;">
                 <div style="color:var(--accent-red);font-size:.8rem;font-weight:bold;">TRIMESTRE ${gameState.time.trimestre}/2</div>
                 <h1 style="font-family:var(--font-heading);margin:6px 0;">📹 Elegí tu video</h1>
-                <p style="color:var(--text-muted);">Este trimestre podés publicar exactamente 1 video manualmente. El resto de tu actividad se procesará al finalizar.</p>
+                <p style="color:var(--text-muted);">Vos elegís 1 video destacado. Después, tu canal sigue publicando normalmente durante todo el trimestre.</p>
             </div>
             ${videos.map(renderVideoCard).join("")}
         </div>
@@ -64,8 +64,8 @@ export function renderPublishVideo(el) {
             // Usamos la nueva función que procesa el video manual + simulación del trimestre
             const resultado = procesarPublicacionTrimestre(
                 video.titulo,
-                video.formato,
-                video.tema
+                video.enfoquePrincipal,
+                video.enfoqueSecundario
             );
 
             gameState.registrarVideoPublicado();
