@@ -178,6 +178,49 @@ function baseVistasPorVideo(player, calidad = 1) {
     return Math.max(descubrimiento, Math.floor(audiencia));
 }
 
+function calcularSubsPorVideo(vistas, player, viral = false) {
+    const a = player.atributos || {};
+    const carisma = Number(a.carisma) || 0;
+    const comunidad = Number(player.comunidad) || 50;
+    const fama = Number(player.fama) || 0;
+
+    // Un video nunca puede aportar 0 suscriptores.
+    // Para un canal chico, lo normal es rondar 5-15 subs por video;
+    // a medida que aumentan las vistas, puede crecer mucho más.
+    const base = randomFloat(3, 6);
+    const porVistas = Math.sqrt(Math.max(1, vistas)) * 0.34;
+    const calidad =
+        (carisma / 100) * 2.5 +
+        (comunidad / 100) * 1.5 +
+        (fama / 100) * 2;
+
+    let resultado = base + porVistas + calidad;
+    if (viral) resultado *= randomFloat(1.25, 1.65);
+
+    // En canales enormes la conversión relativa baja un poco,
+    // pero nunca eliminamos el crecimiento.
+    const subsActuales = Number(player.suscriptores) || 50;
+    if (subsActuales >= 1000000) resultado *= 0.82;
+    else if (subsActuales >= 250000) resultado *= 0.88;
+    else if (subsActuales >= 50000) resultado *= 0.93;
+
+    return Math.max(3, Math.round(resultado));
+}
+
+function calcularIngresosPorVideo(vistas, player) {
+    const a = player.atributos || {};
+    const marketing = Number(a.marketing) || 0;
+    const fama = Number(player.fama) || 0;
+
+    const rpm = clamp(
+        1.20 + marketing * 0.065 + fama * 0.012 + randomFloat(-0.20, 0.35),
+        0.80,
+        6.50
+    );
+
+    return Math.max(0.05, (Math.max(1, vistas) / 1000) * rpm);
+}
+
 function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
     const p = gameState.player;
     const a = p.atributos || {};
@@ -187,7 +230,10 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
     potencia += (Number(a[enfoqueSecundario]) || 0) * 0.35;
     potencia += random(-10, 14);
 
-    let vistas = baseVistasPorVideo(p, 0.9 + clamp(potencia / 150, 0, 0.8));
+    let vistas = baseVistasPorVideo(
+        p,
+        0.9 + clamp(potencia / 150, 0, 0.8)
+    );
 
     const creatividad = Number(a.creatividad) || 0;
     const algoritmo = Number(a.algoritmo) || 0;
@@ -199,7 +245,6 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
         algoritmo * 0.025 +
         carisma * 0.012;
 
-    // Los virales son posibles, pero no ocurren todo el tiempo.
     probViral = clamp(probViral, 0.5, 7.5);
 
     const viral = Math.random() * 100 < probViral;
@@ -217,34 +262,8 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
 
     vistas = Math.max(1, Math.floor(vistas));
 
-    // La conversión también depende del tamaño del canal: los canales grandes
-    // tienen más gente nueva expuesta por cada video, pero no crecen de forma
-    // exponencial sin límite.
-    const conversionBase =
-        0.0028 +
-        (Number(a.carisma) || 0) * 0.000018 +
-        (Number(a.comunidad) || 50) * 0.000003;
-
-    const conversion = clamp(
-        conversionBase * (viral ? 1.35 : 1),
-        0.0022,
-        0.009
-    );
-
-    const nuevosSuscriptores = Math.max(
-        0,
-        Math.floor(vistas * conversion)
-    );
-
-    const rpm =
-        0.007 +
-        (Number(a.marketing) || 0) * 0.00055 +
-        (Number(p.fama) || 0) * 0.00002;
-
-    const ingresos = Math.max(
-        0,
-        Math.floor(vistas * rpm)
-    );
+    const nuevosSuscriptores = calcularSubsPorVideo(vistas, p, viral);
+    const ingresos = calcularIngresosPorVideo(vistas, p);
 
     const famaGanada =
         viral ? random(1, 5) :
@@ -255,14 +274,14 @@ function resultadoVideoManual(titulo, enfoquePrincipal, enfoqueSecundario) {
         titulo: titulo || "Nuevo video",
         vistas,
         suscriptores: nuevosSuscriptores,
-        dinero: ingresos,
+        dinero: Math.round(ingresos),
         famaGanada,
         viral,
         nivelViralidad,
         potencia: Math.round(potencia),
         enfoquePrincipal,
         enfoqueSecundario,
-        rpm: rpm.toFixed(3),
+        rpm: (Math.round(ingresos) / Math.max(1, vistas) * 1000).toFixed(3),
         multiplicadorTendencia: calcularTendencia(),
         multiplicadorViral
     };
@@ -273,9 +292,10 @@ function aplicarResultado(resultado, contarVideo = true) {
 
     p.vistasTotales += resultado.vistas;
     p.suscriptores += resultado.suscriptores;
-    p.dinero += resultado.dinero;
-    p.ingresosTrimestre += resultado.dinero;
-    p.ingresosGenerados = (Number(p.ingresosGenerados) || 0) + resultado.dinero;
+    const dinero = Math.round(Number(resultado.dinero) || 0);
+    p.dinero += dinero;
+    p.ingresosTrimestre += dinero;
+    p.ingresosGenerados = (Number(p.ingresosGenerados) || 0) + dinero;
     p.fama = clamp(Number(p.fama) + resultado.famaGanada, 0, 100);
 
     if (contarVideo) p.videosSubidos += 1;
@@ -359,53 +379,14 @@ function simularVideoSecundario() {
     const viral = Math.random() * 100 < probViral;
     if (viral) vistas *= randomFloat(2.2, 5.5);
 
+    vistas = Math.max(1, Math.floor(vistas));
+
     return {
-        vistas: Math.max(1, Math.floor(vistas)),
-        viral
+        vistas,
+        viral,
+        suscriptores: calcularSubsPorVideo(vistas, p, viral),
+        dinero: calcularIngresosPorVideo(vistas, p)
     };
-}
-
-function calcularSubsPorBloque(vistas, player, viralCount = 0) {
-    const a = player.atributos || {};
-    const subs = Math.max(50, Number(player.suscriptores) || 50);
-    const fama = clamp(Number(player.fama) || 0, 0, 100);
-
-    // Conversión agregada: se calcula sobre TODAS las vistas del trimestre.
-    // Nunca hacemos Math.floor() video por video.
-    let tasa =
-        0.0032 +
-        clamp((Number(a.carisma) || 0) / 100, 0, 1) * 0.0017 +
-        clamp((Number(a.comunidad) || 50) / 100, 0, 1) * 0.0006 +
-        (fama / 100) * 0.0005;
-
-    // Los canales enormes convierten una proporción algo menor, evitando
-    // crecimiento exponencial infinito.
-    if (subs >= 1000000) tasa *= 0.72;
-    else if (subs >= 250000) tasa *= 0.82;
-    else if (subs >= 50000) tasa *= 0.90;
-
-    tasa *= 1 + Math.min(0.18, viralCount * 0.008);
-
-    return Math.max(0, Math.floor(vistas * tasa));
-}
-
-function calcularIngresosPorBloque(vistas, player) {
-    const a = player.atributos || {};
-    const fama = clamp(Number(player.fama) || 0, 0, 100);
-    const marketing = Number(a.marketing) || 0;
-
-    // RPM del juego: dinero por cada 1.000 vistas.
-    // Mejora con marketing y fama, pero con límites.
-    const rpm = clamp(
-        1.10 +
-        marketing * 0.050 +
-        fama * 0.010 +
-        randomFloat(-0.15, 0.30),
-        0.90,
-        5.50
-    );
-
-    return Math.max(0, Math.floor((vistas / 1000) * rpm));
 }
 
 export function procesarPublicacionTrimestre(
@@ -423,6 +404,8 @@ export function procesarPublicacionTrimestre(
     const videosDelResto = Math.max(0, totalVideos - 1);
 
     let simVistas = 0;
+    let simSubs = 0;
+    let simDinero = 0;
     let simFama = 0;
     let simVirales = 0;
     let mejorSimulado = 0;
@@ -430,16 +413,17 @@ export function procesarPublicacionTrimestre(
     for (let i = 0; i < videosDelResto; i++) {
         const resultado = simularVideoSecundario();
         simVistas += resultado.vistas;
+        simSubs += resultado.suscriptores;
+        simDinero += resultado.dinero;
         simFama += resultado.viral ? 1 : 0;
         mejorSimulado = Math.max(mejorSimulado, resultado.vistas);
         if (resultado.viral) simVirales++;
     }
 
-    // El video destacado ya generó sus propios subs e ingresos.
-    // Las publicaciones restantes se acumulan y recién después se calcula
-    // el crecimiento e ingresos del bloque completo.
-    const simSubsEnteros = calcularSubsPorBloque(simVistas, gameState.player, simVirales);
-    const simDineroEntero = calcularIngresosPorBloque(simVistas, gameState.player);
+    // Los subs se calculan por video, pero se acumulan sin redondear a cero.
+    // Esto garantiza que 78 videos nunca puedan terminar dando 0 o 24 subs.
+    const simSubsEnteros = Math.max(0, Math.round(simSubs));
+    const simDineroEntero = Math.max(0, Math.round(simDinero));
     const simFamaEntera = Math.min(6, simFama);
 
     const p = gameState.player;
@@ -467,7 +451,7 @@ export function procesarPublicacionTrimestre(
         videos: totalVideos,
         vistas: Math.floor(manualResult.vistas + simVistas),
         suscriptores: manualResult.suscriptores + simSubsEnteros,
-        dinero: manualResult.dinero + simDineroEntero,
+        dinero: Math.round(manualResult.dinero + simDineroEntero),
         fama: manualResult.famaGanada + simFamaEntera,
         virales: (manualResult.viral ? 1 : 0) + simVirales
     };

@@ -26,13 +26,13 @@ export function renderYearSummary(el) {
             <div class="year-cover">
                 <div class="eyebrow">TEMPORADA ${s.año}</div>
                 <h1>Así fue tu temporada.</h1>
-                <p>Dos trimestres. Un año de carrera. Esto es lo que dejaste.</p>
+                <p>Dos trimestres. Un año de carrera. Así terminó la temporada.</p>
             </div>
 
             <div class="stat-grid four">
                 <div class="stat-tile"><span>👥 Suscriptores</span><strong>${nf(s.suscriptoresFin)}</strong><small>+${nf(s.crecimientoSubs)} este año</small></div>
-                <div class="stat-tile"><span>👁️ Vistas</span><strong>${nf(s.vistasGanadas)}</strong><small>vistas ganadas</small></div>
-                <div class="stat-tile"><span>🎬 Videos</span><strong>${nf(s.videosPublicados)}</strong><small>publicados</small></div>
+                <div class="stat-tile"><span>👁️ Vistas</span><strong>${nf(s.vistasGanadas)}</strong><small>vistas en la temporada</small></div>
+                <div class="stat-tile"><span>🎬 Videos</span><strong>${nf(s.videosPublicados)}</strong><small>jugados</small></div>
                 <div class="stat-tile"><span>💰 Dinero</span><strong>$${nf(ingresosGenerados)}</strong><small>ingresos generados</small></div>
             </div>
 
