@@ -293,5 +293,6 @@ export function renderPretemporada(el) {
 // EXPORTS
 // ============================================================
 
+
 export const pretemporadaScreen = { render: renderPretemporada };
 export default pretemporadaScreen;
