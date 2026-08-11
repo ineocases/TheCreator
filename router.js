@@ -1,428 +1,109 @@
-// router.js
-// Router principal de El Creador
-
+// router.js - Router único de El Creador
 import saveManager from "./engine/saveManager.js";
+import * as createChannelScreen from "./screens/createChannel.js";
+import * as dashboardScreen from "./screens/dashboard.js";
+import * as pretemporadaScreen from "./screens/pretemporada.js";
+import * as publishVideoScreen from "./screens/publishVideo.js";
+import * as videoResultScreen from "./screens/videoResult.js";
+import * as yearSummaryScreen from "./screens/yearSummary.js";
+import * as storeScreen from "./screens/store.js";
+import * as awardsScreen from "./screens/awards.js";
+import * as collabsScreen from "./screens/collabs.js";
+import * as sponsorsScreen from "./screens/sponsors.js";
+import * as pasanCosasScreen from "./screens/pasanCosas.js";
+import * as adminDashboardScreen from "./screens/admin/AdminDashboard.js";
 
-import * as createChannelScreen
-    from "./screens/createChannel.js";
-
-import * as dashboardScreen
-    from "./screens/dashboard.js";
-
-import * as pretemporadaScreen
-    from "./screens/pretemporada.js";
-
-import * as publishVideoScreen
-    from "./screens/publishVideo.js";
-
-import * as videoResultScreen
-    from "./screens/videoResult.js";
-
-import * as storeScreen
-    from "./screens/store.js";
-
-import * as awardsScreen
-    from "./screens/awards.js";
-
-import * as collabsScreen
-    from "./screens/collabs.js";
-
-import * as sponsorsScreen
-    from "./screens/sponsors.js";
-
-import * as pasanCosasScreen
-    from "./screens/pasanCosas.js";
-
-import * as adminDashboardScreen
-    from "./screens/admin/AdminDashboard.js";
-
-// ============================================================
-// INICIAR ROUTER
-// ============================================================
+let initialized = false;
 
 export function initRouter() {
+    if (initialized) return;
+    initialized = true;
 
-    console.log(
-        "?? Router de El Creador inicializado"
-    );
+    window.addEventListener("hashchange", handleRoute);
 
-    let hasSave = false;
+    const hasSave = saveManager.hasSave();
+    if (hasSave) saveManager.loadLocal();
 
-    try {
-
-        hasSave =
-            saveManager.loadLocal();
-
-    } catch (error) {
-
-        console.warn(
-            "?? No se pudo cargar la partida:",
-            error
-        );
-
-        hasSave = false;
-    }
-
-    // Si no hay hash, decidir pantalla inicial
     if (!window.location.hash) {
-
-        window.location.hash =
-            hasSave
-                ? "#dashboard"
-                : "#createChannel";
+        window.location.hash = hasSave ? "#dashboard" : "#createChannel";
+        return;
     }
 
-    // Escuchar navegación
-    window.addEventListener(
-        "hashchange",
-        handleRoute
-    );
-
-    // Render inicial
     handleRoute();
 }
 
-// ============================================================
-// MANEJAR RUTA
-// ============================================================
+function hasSave() {
+    try { return Boolean(saveManager.hasSave()); }
+    catch { return false; }
+}
 
 function handleRoute() {
+    const hash = window.location.hash || "#createChannel";
+    const protectedRoutes = [
+        "#dashboard", "#pretemporada", "#publish", "#videoResult",
+        "#yearSummary", "#pasanCosas", "#store", "#awards",
+        "#collabs", "#sponsors", "#admin"
+    ];
 
-    const hash =
-        window.location.hash ||
-        "#createChannel";
-
-    console.log(
-        "?? Ruta:",
-        hash
-    );
-
-    // Ocultar todas las pantallas
-    document
-        .querySelectorAll(".screen")
-        .forEach(screen => {
-
-            screen.style.display =
-                "none";
-        });
-
-    switch (hash) {
-
-        // ----------------------------------------------------
-        // CREAR CANAL
-        // ----------------------------------------------------
-
-        case "#createChannel":
-
-            renderScreen(
-                "createChannelScreen",
-                createChannelScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // PRETEMPORADA
-        // ----------------------------------------------------
-
-        case "#pretemporada":
-
-            renderScreen(
-                "pretemporadaScreen",
-                pretemporadaScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // DASHBOARD
-        // ----------------------------------------------------
-
-        case "#dashboard":
-
-            renderScreen(
-                "dashboardScreen",
-                dashboardScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // PUBLICAR VIDEO
-        // ----------------------------------------------------
-
-        case "#publish":
-
-            renderScreen(
-                "publishScreen",
-                publishVideoScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // RESULTADO VIDEO
-        // ----------------------------------------------------
-
-        case "#videoResult":
-
-            renderScreen(
-                "resultScreen",
-                videoResultScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // PASAN COSAS
-        // ----------------------------------------------------
-
-        case "#pasanCosas":
-
-            renderScreen(
-                "pasanCosasScreen",
-                pasanCosasScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // TIENDA
-        // ----------------------------------------------------
-
-        case "#store":
-
-            renderScreen(
-                "storeScreen",
-                storeScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // PREMIOS
-        // ----------------------------------------------------
-
-        case "#awards":
-
-            renderScreen(
-                "awardsScreen",
-                awardsScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // COLABORACIONES
-        // ----------------------------------------------------
-
-        case "#collabs":
-
-            renderScreen(
-                "collabsScreen",
-                collabsScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // SPONSORS
-        // ----------------------------------------------------
-
-        case "#sponsors":
-
-            renderScreen(
-                "sponsorsScreen",
-                sponsorsScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // ADMIN
-        // ----------------------------------------------------
-
-        case "#admin":
-
-            renderScreen(
-                "adminContainer",
-                adminDashboardScreen
-            );
-
-            break;
-
-        // ----------------------------------------------------
-        // RUTA DESCONOCIDA
-        // ----------------------------------------------------
-
-        default:
-
-            console.warn(
-                "?? Ruta desconocida:",
-                hash
-            );
-
-            window.location.hash =
-                "#dashboard";
-
-            break;
+    if (protectedRoutes.includes(hash) && !hasSave()) {
+        if (hash !== "#createChannel") window.location.hash = "#createChannel";
+        return;
     }
+
+    document.querySelectorAll(".screen").forEach(screen => {
+        screen.style.display = "none";
+    });
+
+    const routes = {
+        "#createChannel": ["createChannelScreen", createChannelScreen],
+        "#dashboard": ["dashboardScreen", dashboardScreen],
+        "#pretemporada": ["pretemporadaScreen", pretemporadaScreen],
+        "#publish": ["publishScreen", publishVideoScreen],
+        "#videoResult": ["resultScreen", videoResultScreen],
+        "#yearSummary": ["yearSummaryScreen", yearSummaryScreen],
+        "#pasanCosas": ["pasanCosasScreen", pasanCosasScreen],
+        "#store": ["storeScreen", storeScreen],
+        "#awards": ["awardsScreen", awardsScreen],
+        "#collabs": ["collabsScreen", collabsScreen],
+        "#sponsors": ["sponsorsScreen", sponsorsScreen],
+        "#admin": ["adminContainer", adminDashboardScreen]
+    };
+
+    const route = routes[hash];
+    if (!route) {
+        window.location.hash = hasSave() ? "#dashboard" : "#createChannel";
+        return;
+    }
+
+    renderScreen(route[0], route[1]);
 }
 
-// ============================================================
-// RENDER SCREEN
-// ============================================================
-
-function renderScreen(
-    elementId,
-    screenModule
-) {
-
-    const el =
-        document.getElementById(
-            elementId
-        );
-
+function renderScreen(elementId, screenModule) {
+    const el = document.getElementById(elementId);
     if (!el) {
-
-        console.error(
-            `? No existe el contenedor #${elementId} en index.html`
-        );
-
+        console.error(`❌ No existe #${elementId} en index.html`);
         return;
     }
+    el.style.display = "block";
+    el.innerHTML = "";
 
-    if (!screenModule) {
-
-        console.error(
-            `? No existe el módulo para #${elementId}`
-        );
-
-        return;
+    try {
+        let result;
+        if (typeof screenModule.default === "function") result = screenModule.default(el);
+        else if (screenModule.default && typeof screenModule.default.render === "function") result = screenModule.default.render(el);
+        else if (typeof screenModule.render === "function") result = screenModule.render(el);
+        else {
+            const key = Object.keys(screenModule).find(k => k.startsWith("render") && typeof screenModule[k] === "function");
+            if (key) result = screenModule[key](el);
+        }
+        if (result instanceof HTMLElement && result !== el && !el.contains(result)) {
+            el.innerHTML = "";
+            el.appendChild(result);
+        }
+    } catch (error) {
+        console.error(`❌ Error renderizando ${hashSafe(elementId)}:`, error);
+        el.innerHTML = `<div class="error-panel"><h2>Ocurrió un error en esta pantalla</h2><p>${error.message}</p><a href="#dashboard">Volver</a></div>`;
     }
-
-    // Mostrar pantalla
-    el.style.display =
-        "block";
-
-    // ========================================================
-    // DEFAULT COMO FUNCIÓN
-    // ========================================================
-
-    if (
-        typeof screenModule.default ===
-        "function"
-    ) {
-
-        const result =
-            screenModule.default(el);
-
-        procesarResultado(
-            el,
-            result
-        );
-
-        return;
-    }
-
-    // ========================================================
-    // DEFAULT COMO OBJETO
-    // ========================================================
-
-    if (
-        screenModule.default &&
-        typeof screenModule.default.render ===
-        "function"
-    ) {
-
-        const result =
-            screenModule.default.render(
-                el
-            );
-
-        procesarResultado(
-            el,
-            result
-        );
-
-        return;
-    }
-
-    // ========================================================
-    // EXPORT RENDER
-    // ========================================================
-
-    if (
-        typeof screenModule.render ===
-        "function"
-    ) {
-
-        const result =
-            screenModule.render(el);
-
-        procesarResultado(
-            el,
-            result
-        );
-
-        return;
-    }
-
-    // ========================================================
-    // BUSCAR renderX()
-    // ========================================================
-
-    const renderFnKey =
-        Object.keys(screenModule)
-            .find(
-                key =>
-                    key.startsWith("render") &&
-                    typeof screenModule[key] ===
-                    "function"
-            );
-
-    if (renderFnKey) {
-
-        const result =
-            screenModule[
-                renderFnKey
-            ](el);
-
-        procesarResultado(
-            el,
-            result
-        );
-
-        return;
-    }
-
-    console.error(
-        `? El módulo de #${elementId} no tiene una función render válida.`,
-        screenModule
-    );
 }
 
-// ============================================================
-// PROCESAR RESULTADO
-// ============================================================
-
-function procesarResultado(
-    el,
-    result
-) {
-
-    if (
-        typeof HTMLElement !==
-        "undefined" &&
-        result instanceof HTMLElement &&
-        result !== el
-    ) {
-
-        el.innerHTML = "";
-
-        el.appendChild(
-            result
-        );
-    }
-
-}
+function hashSafe(id) { return `#${id}`; }

@@ -22,6 +22,9 @@ const saveManager = {
                 creators: gameState.creators,
                 trends: gameState.trends,
                 sponsors: gameState.sponsors,
+                pendingSponsorOffer: gameState.pendingSponsorOffer,
+                pendingEvent: gameState.pendingEvent,
+                lastYearSummary: gameState.lastYearSummary,
                 lastVideo: gameState.lastVideo,
                 lastVideoResult: gameState.lastVideoResult,
                 ultimoEventoResultado: gameState.ultimoEventoResultado,
@@ -97,6 +100,9 @@ const saveManager = {
                 gameState.sponsors = [];
             }
 
+            gameState.pendingSponsorOffer = parsedData.pendingSponsorOffer || null;
+            gameState.pendingEvent = parsedData.pendingEvent || null;
+            gameState.lastYearSummary = parsedData.lastYearSummary || null;
             gameState.lastVideo = parsedData.lastVideo || null;
             gameState.lastVideoResult = parsedData.lastVideoResult || null;
             gameState.ultimoEventoResultado = parsedData.ultimoEventoResultado || null;
@@ -118,8 +124,55 @@ const saveManager = {
     // =====================================================
 
     hasSave() {
-        return !!localStorage.getItem(this.SAVE_KEY);
-    },
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                this.SAVE_KEY
+            );
+
+        if (!raw) {
+            return false;
+        }
+
+        const data =
+            JSON.parse(raw);
+
+        if (!data.player) {
+            return false;
+        }
+
+        /*
+         * Una partida válida tiene que haber sido
+         * iniciada desde Crear Canal.
+         */
+
+        if (
+            data.player.partidaIniciada !== true
+        ) {
+            return false;
+        }
+
+        if (
+            !data.player.nombre ||
+            !data.player.canal
+        ) {
+            return false;
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Save inválido:",
+            error
+        );
+
+        return false;
+    }
+},
 
     // =====================================================
     // BORRAR PARTIDA

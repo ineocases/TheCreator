@@ -1,12 +1,15 @@
-import sponsors from "../data/brands/sponsors.js";
-import { random } from "./random.js";
+// engine/sponsors.js
+// Compatibilidad con sistemas antiguos. La lógica real de ofertas vive en gameState.
+import { gameState } from "./gameState.js";
 
-export function rollSponsor(player){
+export function rollSponsor() {
+    return gameState.generarOfertaSponsor();
+}
 
-    const available = sponsors.filter(s=>player.subscribers>=s.minSubs);
+export function aceptarSponsor() {
+    return gameState.aceptarSponsor();
+}
 
-    if(!available.length) return null;
-
-    return available[random(0,available.length-1)];
-
+export function rechazarSponsor() {
+    return gameState.rechazarSponsor();
 }

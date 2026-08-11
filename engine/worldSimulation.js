@@ -1,5 +1,6 @@
 import creators from "../data/creators/argentina.js";
-import { randomInt } from "./random.js";
+import { utils } from "./utils.js";
+const randomInt = utils.randomInt;
 
 export function simulateWorld(game){
 

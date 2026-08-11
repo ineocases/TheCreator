@@ -1,154 +1,88 @@
 // screens/videoResult.js
-// CORREGIDO: Encoding UTF-8, imports correctos
+import { gameState } from "../engine/gameState.js";
+import { renderHeaderHud } from "../components/HeaderHud.js";
 
-import { gameState } from '../engine/gameState.js';
-import { renderHeaderHud } from '../components/HeaderHud.js';
+const nf = n => Number(n || 0).toLocaleString();
 
 export function renderVideoResult(el) {
-
-    const container = el || document.getElementById('resultScreen');
+    const container = el || document.getElementById("resultScreen");
     if (!container) return;
 
-    const res = gameState.lastVideoResult;
-    const evento = gameState.ultimoEventoResultado;
-
-    // Si venimos de un evento
-    if (!res && evento) {
-        container.innerHTML = `
-            ${typeof renderHeaderHud === "function" ? renderHeaderHud() : ""}
-            <div style="max-width:700px; margin:30px auto; padding:25px; color:#fff;">
-                <div style="
-                    background:var(--bg-card);
-                    border:var(--border-card);
-                    border-radius:16px;
-                    padding:30px;
-                    text-align:center;
-                ">
-                    <div style="font-size:3rem; margin-bottom:15px;">⚡</div>
-                    <h1 style="font-family:var(--font-heading); margin:0 0 15px;">PASARON COSAS</h1>
-                    <p style="color:var(--text-muted); font-size:1rem; line-height:1.6;">
-                        ${evento}
-                    </p>
-                    <a href="#dashboard" style="
-                        display:inline-block;
-                        margin-top:20px;
-                        padding:14px 28px;
-                        background:var(--accent-red);
-                        color:white;
-                        text-decoration:none;
-                        border-radius:8px;
-                        font-weight:bold;
-                    ">CONTINUAR ▶</a>
-                </div>
-            </div>
-        `;
-        return container;
-    }
-
+    const res = gameState.lastQuarterResult;
     if (!res) {
-        container.innerHTML = `
-            ${typeof renderHeaderHud === "function" ? renderHeaderHud() : ""}
-            <div style="max-width:700px; margin:40px auto; text-align:center; color:#fff;">
-                <h2>No hay resultado disponible.</h2>
-                <a href="#dashboard">Volver al Dashboard</a>
-            </div>
-        `;
+        container.innerHTML = `<div class="page-shell">${renderHeaderHud()}<div class="panel center"><h2>No hay resultado disponible.</h2><a class="btn primary" href="#dashboard">Volver</a></div></div>`;
         return container;
     }
 
-    const vistas = Number(res.vistas) || 0;
-    const subs = Number(res.suscriptores) || 0;
-    const dinero = Number(res.dinero) || 0;
-    const fama = Number(res.famaGanada) || 0;
-    const viral = Boolean(res.viral);
-
-    let tituloRendimiento = "NORMAL";
-    if (res.nivelViralidad === "fenomeno") tituloRendimiento = "🌎 FENÓMENO";
-    else if (res.nivelViralidad === "mega_viral") tituloRendimiento = "🚀 MEGA VIRAL";
-    else if (viral) tituloRendimiento = "🔥 VIRAL";
-    else if (vistas >= 10000) tituloRendimiento = "📈 EXCELENTE";
-    else if (vistas >= 3000) tituloRendimiento = "👍 BUENO";
+    const finDeAño = gameState.time.trimestre === 2;
+    const sponsor = gameState.pendingSponsorOffer;
 
     container.innerHTML = `
-        ${typeof renderHeaderHud === "function" ? renderHeaderHud() : ""}
-        <div style="max-width:760px; margin:25px auto; padding:20px; color:#fff;">
+        <div class="page-shell result-page">
+            ${renderHeaderHud()}
+            <div class="eyebrow">📊 TRIMESTRE ${gameState.time.trimestre}/2 TERMINADO</div>
+            <h1 class="page-title">Tu canal siguió avanzando.</h1>
+            <p class="page-subtitle">Vos elegiste el video destacado. El resto de tu canal trabajó durante el trimestre.</p>
 
-            ${viral ? `
-                <div style="
-                    background:linear-gradient(135deg, rgba(255,69,0,.25), rgba(255,215,0,.15));
-                    border:2px solid var(--accent-yellow, #ffd700);
-                    border-radius:16px;
-                    padding:25px;
-                    text-align:center;
-                    margin-bottom:20px;
-                ">
-                    <div style="font-size:2.5rem;">🔥🔥🔥</div>
-                    <h2 style="margin:8px 0; font-family:var(--font-heading);">¡EL VIDEO SE HIZO VIRAL!</h2>
-                    <p style="color:#ddd; margin:0;">El algoritmo empezó a recomendar tu contenido.</p>
+            <div class="result-hero">
+                <div class="result-number">${nf(res.totalVideos)}</div>
+                <div>
+                    <div class="eyebrow">ACTIVIDAD DEL CANAL</div>
+                    <h2>videos publicados este trimestre</h2>
+                    <p>1 fue el video que elegiste. Los otros ${nf(res.simulatedVideos)} representan la actividad normal de tu creador.</p>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                ${[
+                    ["👁️ Vistas", `+${nf(res.totalVistas)}`],
+                    ["👥 Suscriptores", `+${nf(res.totalSubs)}`],
+                    ["💰 Ingresos", `+$${nf(res.totalDinero)}`],
+                    ["⭐ Fama", `+${nf(res.totalFama)}`]
+                ].map(([a,b]) => `<div class="stat-tile"><span>${a}</span><strong>${b}</strong></div>`).join("")}
+            </div>
+
+            <div class="panel featured-video">
+                <div class="eyebrow">🎬 VIDEO DESTACADO</div>
+                <h2>${res.manualVideo.titulo}</h2>
+                <div class="mini-stats">
+                    <span>👁️ ${nf(res.manualVideo.vistas)}</span>
+                    <span>👥 +${nf(res.manualVideo.suscriptores)}</span>
+                    <span>💰 +$${nf(res.manualVideo.dinero)}</span>
+                    ${res.manualVideo.viral ? `<b>🔥 ${res.manualVideo.nivelViralidad.toUpperCase()}</b>` : ""}
+                </div>
+            </div>
+
+            ${sponsor ? `
+                <div class="sponsor-alert">
+                    <div class="sponsor-alert-icon">💼</div>
+                    <div>
+                        <div class="eyebrow">NUEVA PROPUESTA</div>
+                        <h2>${sponsor.name} quiere trabajar con vos</h2>
+                        <p>La oferta apareció porque tu canal alcanzó un nuevo nivel. No necesitás entrar a Sponsors para descubrirla.</p>
+                    </div>
+                    <a class="btn gold" href="#sponsors">VER OFERTA</a>
                 </div>
             ` : ""}
 
-            <div style="
-                background:var(--bg-card);
-                border:var(--border-card);
-                border-radius:16px;
-                padding:30px;
-            ">
-                <span style="color:var(--accent-red); font-size:.8rem; font-weight:bold; text-transform:uppercase;">
-                    📹 RESULTADO DEL VIDEO
-                </span>
-                <h1 style="font-family:var(--font-heading); margin:8px 0;">${res.titulo}</h1>
-                <div style="color:var(--accent-green); font-weight:bold; margin-bottom:25px;">
-                    ${tituloRendimiento}
-                </div>
-
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:15px;">
-                    ${[
-                        ["VISTAS", `+${vistas.toLocaleString()}`, "white"],
-                        ["SUSCRIPTORES", `+${subs.toLocaleString()}`, "#4cd137"],
-                        ["INGRESOS", `+$${dinero.toLocaleString()}`, "#fbc531"],
-                        ["FAMA", `+${fama}`, "#ffd700"]
-                    ].map(([label, value, color]) => `
-                        <div style="background:rgba(0,0,0,.5); padding:18px; border-radius:10px;">
-                            <div style="color:var(--text-muted); font-size:.75rem;">${label}</div>
-                            <strong style="display:block; margin-top:5px; font-size:1.6rem; color:${color};">
-                                ${value}
-                            </strong>
-                        </div>
-                    `).join("")}
-                </div>
-
-                ${res.multiplicadorTendencia > 1 ? `
-                    <div style="margin-top:20px; padding:14px; border-radius:10px; background:rgba(67,209,122,.1); border:1px solid #43d17a;">
-                        📈 Tu video se benefició de una tendencia activa.
-                        <strong>x${res.multiplicadorTendencia}</strong>
-                    </div>
-                ` : ""}
-
-                <div style="
-                    margin-top:25px;
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                    gap:15px;
-                    flex-wrap:wrap;
-                ">
-                    <div style="color:var(--text-muted); font-size:.85rem;">
-                        Potencia del video: <strong style="color:white;">${res.potencia}</strong>
-                    </div>
-                    <a href="#pasanCosas" style="
-                        padding:14px 28px;
-                        background:var(--accent-red);
-                        color:white;
-                        text-decoration:none;
-                        border-radius:8px;
-                        font-weight:bold;
-                        font-family:var(--font-heading);
-                    ">CONTINUAR ▶</a>
-                </div>
+            <div class="continue-row">
+                <a class="btn ghost" href="#dashboard">Volver al dashboard</a>
+                <button id="continueAfterVideo" class="btn primary">${finDeAño ? "📊 VER RESUMEN DEL AÑO" : "▶ IR AL TRIMESTRE 2"}</button>
             </div>
         </div>
     `;
+
+    container.querySelector("#continueAfterVideo")?.addEventListener("click", () => {
+        if (finDeAño) {
+            gameState.finalizarAño();
+            gameState.guardar();
+            window.location.hash = "#yearSummary";
+            return;
+        }
+        gameState.nextQuarter();
+        gameState.guardar();
+        window.location.hash = "#dashboard";
+    });
 
     return container;
 }

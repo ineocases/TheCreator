@@ -61,7 +61,7 @@ export function renderAdmin(el) {
                     <p style="
                         color:var(--text-muted);
                     ">
-                        Control¨¢ el mundo del juego.
+                        ControlÂ¨Â¢ el mundo del juego.
                     </p>
 
                 </div>
@@ -74,7 +74,7 @@ export function renderAdmin(el) {
                         text-decoration:none;
                     "
                 >
-                    ¡û Salir
+                    Â¡Ã» Salir
                 </a>
 
             </div>
@@ -256,7 +256,7 @@ function renderCreatorsAdmin(
                     </option>
 
                     <option>
-                        F¨²tbol
+                        FÂ¨Â²tbol
                     </option>
 
                     <option>
@@ -264,7 +264,7 @@ function renderCreatorsAdmin(
                     </option>
 
                     <option>
-                        Tecnolog¨ªa
+                        TecnologÂ¨Âªa
                     </option>
 
                     <option>
@@ -370,7 +370,7 @@ function renderCreatorsAdmin(
                 if (!nombre) {
 
                     alert(
-                        "Ingres¨¢ un nombre."
+                        "IngresÂ¨Â¢ un nombre."
                     );
 
                     return;
@@ -510,7 +510,7 @@ async function cargarCreadores(
                     color:var(--text-muted);
                 ">
                     No hay creadores
-                    personalizados todav¨ªa.
+                    personalizados todavÂ¨Âªa.
                 </p>
             `;
 
@@ -548,7 +548,7 @@ async function cargarCreadores(
                             ">
 
                                 ${creator.nicho}
-                                ¡¤
+                                Â¡Â¤
                                 ${Number(
                                     creator.seguidores || 0
                                 ).toLocaleString()}
@@ -692,7 +692,7 @@ function renderTrendsAdmin(
                 </option>
 
                 <option>
-                    F¨²tbol
+                    FÂ¨Â²tbol
                 </option>
 
                 <option>
@@ -700,7 +700,7 @@ function renderTrendsAdmin(
                 </option>
 
                 <option>
-                    Tecnolog¨ªa
+                    TecnologÂ¨Âªa
                 </option>
 
                 <option>
@@ -774,7 +774,7 @@ function renderTrendsAdmin(
                 if (!nombre) {
 
                     alert(
-                        "Ingres¨¢ un nombre."
+                        "IngresÂ¨Â¢ un nombre."
                     );
 
                     return;
@@ -858,26 +858,26 @@ function renderEventsAdmin(
 
             <input
                 id="eventTitle"
-                placeholder="T¨ªtulo"
+                placeholder="TÂ¨Âªtulo"
             >
 
 
             <textarea
                 id="eventDescription"
-                placeholder="Descripci¨®n"
+                placeholder="DescripciÂ¨Â®n"
                 rows="4"
             ></textarea>
 
 
             <input
                 id="eventOptionA"
-                placeholder="Opci¨®n segura"
+                placeholder="OpciÂ¨Â®n segura"
             >
 
 
             <input
                 id="eventOptionB"
-                placeholder="Opci¨®n arriesgada"
+                placeholder="OpciÂ¨Â®n arriesgada"
             >
 
 
@@ -936,7 +936,7 @@ function renderEventsAdmin(
                 if (!titulo) {
 
                     alert(
-                        "El evento necesita t¨ªtulo."
+                        "El evento necesita tÂ¨Âªtulo."
                     );
 
                     return;

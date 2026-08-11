@@ -66,7 +66,7 @@ export function calcularCompatibilidad(
     );
 
 
-    // RELACI¨®N
+    // RELACIÂ¨Â®N
 
     score += Math.max(
         -20,
@@ -93,7 +93,7 @@ export function calcularCompatibilidad(
 
 
 // ============================================================
-// RELACI¨®N INICIAL
+// RELACIÂ¨Â®N INICIAL
 // ============================================================
 
 export function crearRelacionInicial() {
@@ -108,7 +108,7 @@ export function crearRelacionInicial() {
 
 
 // ============================================================
-// AUMENTAR RELACI¨®N
+// AUMENTAR RELACIÂ¨Â®N
 // ============================================================
 
 export function aumentarRelacion(
@@ -192,7 +192,7 @@ export function aumentarRivalidad(
 
 
 // ============================================================
-// NOTIFICACI¨®N
+// NOTIFICACIÂ¨Â®N
 // ============================================================
 
 export function generarNotificacionCreador(
@@ -209,13 +209,13 @@ export function generarNotificacionCreador(
             `?? ${creator.nombre} vio tu canal`,
 
         descripcion:
-            `${creator.nombre} empez¨® a prestar atenci¨®n a tu contenido.`
+            `${creator.nombre} empezÂ¨Â® a prestar atenciÂ¨Â®n a tu contenido.`
     });
 }
 
 
 // ============================================================
-// REACCI¨®N DE CREADOR
+// REACCIÂ¨Â®N DE CREADOR
 // ============================================================
 
 export function reaccionarACreador(
@@ -262,7 +262,7 @@ export function reaccionarACreador(
     }
 
 
-    // RELACI¨®N
+    // RELACIÂ¨Â®N
 
     const relacion =
         Number(creator.relacion) || 0;
@@ -299,7 +299,7 @@ export function reaccionarACreador(
 
 
     // --------------------------------------------------------
-    // TIPO DE REACCI¨®N
+    // TIPO DE REACCIÂ¨Â®N
     // --------------------------------------------------------
 
     const tipos = [
@@ -377,7 +377,7 @@ export function reaccionarACreador(
         recompensa.fama;
 
 
-    // RELACI¨®N
+    // RELACIÂ¨Â®N
 
     aumentarRelacion(
         creator,
@@ -386,7 +386,7 @@ export function reaccionarACreador(
 
 
     // --------------------------------------------------------
-    // NOTIFICACI¨®N
+    // NOTIFICACIÂ¨Â®N
     // --------------------------------------------------------
 
     let titulo;
@@ -395,17 +395,17 @@ export function reaccionarACreador(
     if (tipo === "reaccion") {
 
         titulo =
-            `?? ${creator.nombre} reaccion¨® a tu video`;
+            `?? ${creator.nombre} reaccionÂ¨Â® a tu video`;
 
     } else if (tipo === "compartido") {
 
         titulo =
-            `?? ${creator.nombre} comparti¨® tu video`;
+            `?? ${creator.nombre} compartiÂ¨Â® tu video`;
 
     } else {
 
         titulo =
-            `?? ${creator.nombre} coment¨® tu video`;
+            `?? ${creator.nombre} comentÂ¨Â® tu video`;
     }
 
 
@@ -416,7 +416,7 @@ export function reaccionarACreador(
         titulo,
 
         descripcion:
-            `Tu interacci¨®n con ${creator.nombre} gener¨® +${recompensa.vistas.toLocaleString()} vistas y +${recompensa.subs.toLocaleString()} subs.`
+            `Tu interacciÂ¨Â®n con ${creator.nombre} generÂ¨Â® +${recompensa.vistas.toLocaleString()} vistas y +${recompensa.subs.toLocaleString()} subs.`
     });
 
 
@@ -513,7 +513,7 @@ export function initializeRelationships(
 
 
 // ============================================================
-// CAMBIAR RELACI¨®N
+// CAMBIAR RELACIÂ¨Â®N
 // ============================================================
 
 export function changeRelationship(
@@ -553,7 +553,7 @@ export function changeRelationship(
 
 
 // ============================================================
-// OBTENER RELACI¨®N
+// OBTENER RELACIÂ¨Â®N
 // ============================================================
 
 export function getRelationship(

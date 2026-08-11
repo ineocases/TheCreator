@@ -1,6 +1,6 @@
-import { createCreator } from "../firebase/creators.js";
+import { createCreator } from "../../firebase/creators.js";
 
-import { buildCreator } from "./creatorFactory.js";
+import { buildCreator } from "../../engine/creatorFactory.js";
 
 export async function saveCreator(){
 

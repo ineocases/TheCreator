@@ -1,112 +1,75 @@
 // screens/publishVideo.js
-// CORREGIDO: Compatible con videoSystem, encoding UTF-8
-
 import { renderHeaderHud } from "../components/HeaderHud.js";
 import { gameState } from "../engine/gameState.js";
-import { generarVideos, procesarPublicacionVideo } from "../engine/videoSystem.js";
+import { generarVideos, procesarPublicacionTrimestre } from "../engine/videoSystem.js";
 
 export function renderPublishVideo(el) {
-
     const container = el || document.getElementById("publishScreen");
     if (!container) return;
 
-    const videos = generarVideos(gameState.player);
-
-    const gratuitos = videos.filter(v => v.tipo === "gratis");
-    const medios = videos.filter(v => v.tipo === "medio");
-    const caros = videos.filter(v => v.tipo === "caro");
-
-    function renderVideoCard(video) {
-        const estrellas = Math.max(1, Math.min(5, Math.ceil(video.riesgo / 20)));
-        return `
-            <div class="video-option" style="
-                background:rgba(255,255,255,0.03);
-                border:1px solid rgba(255,255,255,0.08);
-                border-radius:12px;
-                padding:18px;
-                margin-bottom:12px;
-            ">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                    <div>
-                        <h2 style="margin:0 0 7px; color:white;">${video.titulo}</h2>
-                        <div style="color:var(--text-muted); font-size:0.9rem;">
-                            ${video.formato} · ${video.tema}
-                        </div>
-                    </div>
-                    <div style="text-align:right; white-space:nowrap;">
-                        <strong style="color:${video.costo === 0 ? "#43d17a" : "var(--accent-red)"};">
-                            ${video.costo === 0 ? "GRATIS" : "$" + video.costo.toLocaleString()}
-                        </strong>
-                    </div>
-                </div>
-                <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--text-muted); font-size:0.85rem;">
-                        Riesgo: ${"⭐".repeat(estrellas)}
-                    </span>
-                    <button class="select-video" data-video-id="${video.id}" style="
-                        padding:10px 16px;
-                        background:var(--accent-red);
-                        color:white;
-                        border:none;
-                        border-radius:8px;
-                        font-weight:bold;
-                        cursor:pointer;
-                    ">Elegir</button>
-                </div>
-            </div>
-        `;
+    if (!gameState.player.pretemporada) {
+        container.innerHTML = `${renderHeaderHud()}<div style="max-width:700px;margin:40px auto;padding:30px;background:var(--bg-card);border-radius:16px;text-align:center;"><h2>Primero hacé la pretemporada.</h2><a href="#pretemporada">Ir a pretemporada</a></div>`;
+        return container;
     }
 
-    container.innerHTML = `
-        ${typeof renderHeaderHud === "function" ? renderHeaderHud() : ""}
-        <div style="max-width:700px; margin:30px auto; padding:25px; color:#fff;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <div>
-                    <h1 style="font-family:var(--font-heading); color:var(--accent-red); margin:0; text-transform:uppercase;">
-                        📹 Elegí tu próximo video
-                    </h1>
-                    <p style="color:var(--text-muted); margin-top:8px;">
-                        El juego genera las ideas según tu nicho.
-                    </p>
-                </div>
-                <a href="#dashboard" style="color:var(--text-muted); text-decoration:none;">← Volver</a>
-            </div>
+    if (!gameState.puedeSubirVideo()) {
+        container.innerHTML = `${renderHeaderHud()}<div style="max-width:700px;margin:40px auto;padding:30px;background:var(--bg-card);border-radius:16px;text-align:center;"><h2>Ya publicaste tu video este trimestre.</h2><p style="color:var(--text-muted);">No podés subir otro hasta avanzar al próximo trimestre.</p><a href="#dashboard" style="color:var(--accent-red);">Volver al dashboard</a></div>`;
+        return container;
+    }
 
-            ${gratuitos.length ? `<h3 style="color:#43d17a; text-transform:uppercase;">🟢 Gratis</h3>${gratuitos.map(renderVideoCard).join("")}` : ""}
-            ${medios.length ? `<h3 style="color:#f0b429; text-transform:uppercase; margin-top:30px;">🟡 Producción media</h3>${medios.map(renderVideoCard).join("")}` : ""}
-            ${caros.length ? `<h3 style="color:var(--accent-red); text-transform:uppercase; margin-top:30px;">🔴 Gran producción</h3>${caros.map(renderVideoCard).join("")}` : ""}
+    const videos = generarVideos(gameState.player);
+
+    const renderVideoCard = video => `
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+                <div>
+                    <h2 style="margin:0 0 7px;color:#fff;font-size:1.1rem;">${video.titulo}</h2>
+                    <div style="color:var(--text-muted);font-size:.85rem;">${video.formato} · ${video.tema}</div>
+                </div>
+                <strong style="white-space:nowrap;color:${video.costo===0?'var(--accent-green)':'var(--accent-red)'};">${video.costo===0?'GRATIS':'$'+video.costo.toLocaleString()}</strong>
+            </div>
+            <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <span style="color:var(--text-muted);font-size:.8rem;">Riesgo: ${"⭐".repeat(Math.max(1,Math.min(5,Math.ceil(video.riesgo/20))))}</span>
+                <button class="select-video" data-video-id="${video.id}" style="padding:10px 16px;background:var(--accent-red);color:#fff;border:none;border-radius:8px;font-weight:bold;">PUBLICAR</button>
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = `
+        <div style="max-width:760px;margin:0 auto;padding:20px;">
+            ${renderHeaderHud()}
+            <div style="margin:25px 0;">
+                <div style="color:var(--accent-red);font-size:.8rem;font-weight:bold;">TRIMESTRE ${gameState.time.trimestre}/2</div>
+                <h1 style="font-family:var(--font-heading);margin:6px 0;">📹 Elegí tu video</h1>
+                <p style="color:var(--text-muted);">Este trimestre podés publicar exactamente 1 video manualmente. El resto de tu actividad se procesará al finalizar.</p>
+            </div>
+            ${videos.map(renderVideoCard).join("")}
         </div>
     `;
 
     container.querySelectorAll(".select-video").forEach(button => {
         button.addEventListener("click", () => {
-            const id = button.dataset.videoId;
-            const video = videos.find(item => item.id === id);
+            if (!gameState.puedeSubirVideo()) return;
 
-            if (!video) {
-                alert("No se pudo encontrar el video.");
-                return;
-            }
+            const video = videos.find(item => item.id === button.dataset.videoId);
+            if (!video) return;
 
             if (video.costo > gameState.player.dinero) {
                 alert("No tenés suficiente dinero para producir este video.");
                 return;
             }
 
-            // Pagar producción
             gameState.player.dinero -= video.costo;
 
-            // Publicar
-            const resultado = procesarPublicacionVideo(
+            // Usamos la nueva función que procesa el video manual + simulación del trimestre
+            const resultado = procesarPublicacionTrimestre(
                 video.titulo,
                 video.formato,
                 video.tema
             );
 
+            gameState.registrarVideoPublicado();
             gameState.lastVideo = video;
-            gameState.lastVideoResult = resultado;
-
-            // Guardar
             gameState.guardar();
 
             window.location.hash = "#videoResult";

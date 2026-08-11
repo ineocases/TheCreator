@@ -1,58 +1,14 @@
 // engine/gameLoop.js
-import gameState from '.gameState.js';
-import videoSystem from '.videoSystem.js'; // Lo activaremos en el pr贸ximo paso
+// Compatibilidad con el prototipo anterior. La progresi贸n real la controla gameState + router.
+import { gameState } from "./gameState.js";
 
 const gameLoop = {
-    // Inicia un nuevo trimestre
     startQuarter() {
-        console.log(`馃尡 Iniciando Q${gameState.time.quarter} del a帽o ${gameState.time.year}`);
-        // TODO: Actualizar la interfaz (UI) para mostrar los datos actuales
+        console.log(`馃尡 Iniciando ${gameState.time.a帽o} 路 T${gameState.time.trimestre}`);
+        return gameState.time;
     },
-
-    // El jugador elige subir un video
-	publishVideo(idea) {
-			if (!gameState.useVideoAction()) {
-				console.warn("No te quedan videos para publicar este trimestre.");
-				return;
-        }
-        
-        // ?Acá ocurre la magia!
-			const results = videoSystem.processVideo(idea);
-			console.log("Resultados del video:", results);
-        
-			if (gameState.time.videosAvailable === 0) {
-				this.endQuarter();
-			}
-	},
-
-    // Termina el trimestre actual
-    endQuarter() {
-        console.log("鈴憋笍 Trimestre terminado. Calculando eventos aleatorios...");
-        
-        // TODO: Llamar al sistema de eventos (70% nada, 20% com煤n, etc.)
-        
-        // Revisamos si es fin de a帽o
-        if (gameState.time.quarter === 4) {
-            this.triggerEndOfYearEvent();
-        } else {
-            this.showQuarterSummary();
-        }
-    },
-
-    showQuarterSummary() {
-        console.log("馃搳 Mostrando resumen del trimestre...");
-        // TODO: Abrir pantalla de resultados y mejoras (Tienda)
-    },
-
-    triggerEndOfYearEvent() {
-        console.log("馃弳 隆Bienvenidos a los Coscu Army Awards!");
-        // TODO: Pantalla especial de diciembre
-    },
-
-    // Funci贸n que llamar谩 el bot贸n de "Siguiente Trimestre" en la interfaz
     advanceToNextQuarter() {
-        gameState.nextQuarter();
-        this.startQuarter();
+        return gameState.nextQuarter();
     }
 };
 
