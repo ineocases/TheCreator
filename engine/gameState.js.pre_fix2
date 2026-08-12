@@ -702,12 +702,9 @@ export const gameState = {
         const hayRookie = candidatos.some(c => Number(c.seguidores || 0) <= 25000 && Number.isInteger(c.debutYear));
         // Las invitaciones deben sentirse como parte del mundo, no como
         // contenido que el jugador tiene que perseguir desde un menú.
-        const colaboracionesPrevias = Number(p.stats?.colaboraciones || 0);
         const chance = subs < 1000
             ? (hayRookie ? 0.96 : 0.88)
-            : colaboracionesPrevias === 0
-                ? 1.00
-                : Math.min(0.94, 0.62 + networking * 0.008 + fama * 0.003 + Math.min(0.16, (subs / 250000) * 0.16));
+            : Math.min(0.88, 0.42 + networking * 0.008 + fama * 0.003 + Math.min(0.16, (subs / 250000) * 0.16));
 
         if (Math.random() > chance) return null;
 
@@ -896,9 +893,9 @@ export const gameState = {
             }
         }
         const probabilidad =
-            marca.minSubs >= 750000 ? 0.90 :
-            marca.minSubs >= 300000 ? 0.92 :
-            0.96;
+            marca.minSubs >= 750000 ? 0.75 :
+            marca.minSubs >= 300000 ? 0.72 :
+            0.85;
 
         if (Math.random() > probabilidad) return null;
 

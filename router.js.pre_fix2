@@ -15,7 +15,6 @@ import * as collabsScreen from "./screens/collabs.js";
 import * as sponsorsScreen from "./screens/sponsors.js";
 import * as pasanCosasScreen from "./screens/pasanCosas.js";
 import * as adminDashboardScreen from "./screens/admin/AdminDashboard.js";
-import { renderOpportunityOverlay } from "./components/OpportunityOverlay.js";
 
 let initialized = false;
 
@@ -107,7 +106,6 @@ function renderScreen(elementId, screenModule) {
             el.innerHTML = "";
             el.appendChild(result);
         }
-        renderOpportunityOverlay(window.location.hash);
     } catch (error) {
         console.error(`❌ Error renderizando ${hashSafe(elementId)}:`, error);
         el.innerHTML = `<div class="error-panel"><h2>Ocurrió un error en esta pantalla</h2><p>${error.message}</p><a href="#dashboard">Volver</a></div>`;

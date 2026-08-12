@@ -105,9 +105,19 @@ export function renderPublishVideo(el) {
 
             gameState.registrarVideoPublicado();
             gameState.guardar();
-            
-            // Mostrar pantalla de resultado del minijuego antes de continuar
-            window.location.hash = "#videoResult";
+
+            // Las oportunidades no quedan escondidas en un menú:
+            // si el cierre generó un evento, una colab o un sponsor, el juego
+            // te lo muestra inmediatamente.
+            if (gameState.pendingEvent) {
+                window.location.hash = "#pasanCosas";
+            } else if (gameState.pendingCollabOffer) {
+                window.location.hash = "#collabs";
+            } else if (gameState.pendingSponsorOffer) {
+                window.location.hash = "#sponsors";
+            } else {
+                window.location.hash = "#videoResult";
+            }
         });
     });
 
